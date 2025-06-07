@@ -40,6 +40,24 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Guard for Platform Owner
+        'platform_owner' => [
+            'driver' => 'session',
+            'provider' => 'platform_owners',
+        ],
+
+        // Guard for Company Admin
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
+
+        // Guard for Company Staff
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff',
+        ],
     ],
 
     /*
@@ -69,6 +87,24 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        // Provider for Platform Owners
+        'platform_owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\PlatformOwner::class,
+        ],
+
+        // Provider for Company Admins
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CompanyAdmin::class,
+        ],
+
+        // Provider for Company Staff
+        'staff' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CompanyStaff::class,
+        ],
     ],
 
     /*
@@ -94,6 +130,19 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'admins' => [
+            'provider' => 'admins',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'staff' => [
+            'provider' => 'staff',
+            'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
