@@ -11,7 +11,6 @@ class CompanyAdmin extends Authenticatable
 
     protected $table = 'company_admin';
     protected $primaryKey = 'admin_id';
-    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
