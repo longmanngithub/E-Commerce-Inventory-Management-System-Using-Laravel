@@ -48,15 +48,15 @@ return [
         ],
 
         // Guard for Company Admin
-        'admin' => [
+        'company_admin' => [
             'driver' => 'session',
-            'provider' => 'admins',
+            'provider' => 'company_admins',
         ],
 
         // Guard for Company Staff
-        'staff' => [
+        'company_staff' => [
             'driver' => 'session',
-            'provider' => 'staff',
+            'provider' => 'company_staffs',
         ],
     ],
 
@@ -95,13 +95,13 @@ return [
         ],
 
         // Provider for Company Admins
-        'admins' => [
+        'company_admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\CompanyAdmin::class,
         ],
 
         // Provider for Company Staff
-        'staff' => [
+        'company_staffs' => [
             'driver' => 'eloquent',
             'model' => App\Models\CompanyStaff::class,
         ],
@@ -134,14 +134,22 @@ return [
             'throttle' => 60,
         ],
 
-        'admins' => [
-            'provider' => 'admins',
+        'company_admins' => [
+            'provider' => 'company_admins',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
-        'staff' => [
-            'provider' => 'staff',
+
+        'company_staffs' => [
+            'provider' => 'company_staffs',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'platform_owners' => [
+            'provider' => 'platform_owners',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
