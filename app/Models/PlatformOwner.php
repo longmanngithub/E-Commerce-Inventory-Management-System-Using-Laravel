@@ -11,7 +11,7 @@ class PlatformOwner extends Authenticatable
 
     protected $table = 'platform_owner';
     protected $primaryKey = 'owner_id';
-    public $timestamps = false; // Your table doesn't have created_at/updated_at
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -33,4 +33,14 @@ class PlatformOwner extends Authenticatable
     protected $hidden = [
         'owner_password',
     ];
+
+    /**
+     * Override the default password column name.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->owner_password;
+    }
 }
