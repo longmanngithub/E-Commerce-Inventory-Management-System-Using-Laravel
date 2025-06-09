@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Notifications\CompanyPasswordResetNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable; // Use Authenticatable for login
+use Illuminate\Notifications\Notifiable;
 
 class CompanyAdmin extends Authenticatable
 {
-    use HasFactory;
+    use Notifiable;
 
     protected $table = 'company_admin';
     protected $primaryKey = 'admin_id';
@@ -19,9 +20,7 @@ class CompanyAdmin extends Authenticatable
         'admin_name',
         'admin_email',
         'admin_password',
-        'admin_image',
         'company_id',
-        'subscription_id',
     ];
 
     /**
@@ -32,6 +31,14 @@ class CompanyAdmin extends Authenticatable
     ];
 
     /**
+     * Override the password column for authentication.
+     */
+    public function getAuthPassword()
+    {
+        return $this->admin_password;
+    }
+
+    /**
      * Get the company that the admin belongs to.
      */
     public function company()
@@ -39,11 +46,18 @@ class CompanyAdmin extends Authenticatable
         return $this->belongsTo(Company::class, 'company_id');
     }
 
-    /**
-     * Get the subscription plan for the admin.
-     */
-    public function subscription()
+    public function sendPasswordResetNotification($token)
     {
-        return $this->belongsTo(PlanSubscription::class, 'subscription_id');
+        $this->notify(new CompanyPasswordResetNotification($token));
+    }
+
+    /**
+     * Get the e-mail address where password reset links are sent.
+     *
+     * @return string
+     */
+    public function getEmailForPasswordReset()
+    {
+        return $this->admin_email;
     }
 }
