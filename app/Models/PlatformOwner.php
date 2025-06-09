@@ -11,7 +11,6 @@ class PlatformOwner extends Authenticatable
 
     protected $table = 'platform_owner';
     protected $primaryKey = 'owner_id';
-    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.

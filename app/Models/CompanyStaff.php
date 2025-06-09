@@ -14,7 +14,6 @@ class CompanyStaff extends Authenticatable
 
     protected $table = 'company_staff';
     protected $primaryKey = 'staff_id';
-    public $timestamps = false;
 
     protected $fillable = [
         'staff_name',
