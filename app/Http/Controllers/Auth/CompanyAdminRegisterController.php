@@ -94,6 +94,6 @@ class CompanyAdminRegisterController extends Controller
         // Forget the session variable
         $request->session()->forget('new_admin_id');
 
-        return redirect()->route('dashboard');
+        return redirect()->route('subscription.plans');
     }
 }
