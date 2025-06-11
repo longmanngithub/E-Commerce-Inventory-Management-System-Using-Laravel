@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -73,8 +74,23 @@ Route::middleware('auth:company_admin,company_staff')->group(function () {
 });
 
 // This group is ONLY for Company Admins
-Route::middleware('auth:company_admin')->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('users', CompanyUserController::class);
+Route::middleware('auth:company_admin')->prefix('management')->name('management.')->group(function () {
+    // Users view
+    Route::get('/users', [CompanyUserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [CompanyUserController::class, 'create'])->name('users.create');
+    Route::post('/users', [CompanyUserController::class, 'store'])->name('users.store');
+
+    // Routes for Editing/Deleting Staff
+    Route::get('/staff/{id}/edit', [CompanyUserController::class, 'editStaff'])->name('users.edit.staff');
+    Route::put('/staff/{id}', [CompanyUserController::class, 'updateStaff'])->name('users.update.staff');
+    Route::delete('/staff/{id}', [CompanyUserController::class, 'destroyStaff'])->name('users.destroy.staff');
+
+    // Routes for Deleting other Admins (we won't allow editing other admins for now)
+    Route::delete('/admins/{id}', [CompanyUserController::class, 'destroyAdmin'])->name('users.destroy.admin');
+
+    // Company view
+    Route::get('/company', [CompanyController::class, 'edit'])->name('company.edit');
+    Route::put('/company', [CompanyController::class, 'update'])->name('company.update');
 });
 
 
