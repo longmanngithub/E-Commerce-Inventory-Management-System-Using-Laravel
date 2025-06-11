@@ -2,37 +2,56 @@
 
 namespace App\Mail;
 
+use App\Models\UserInvitation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class UserInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $token;
-    public $email;
-
     /**
      * Create a new message instance.
+     * We use PHP 8's constructor property promotion for cleaner code.
+     * This makes the $invitation object automatically available to our view.
      */
-    public function __construct($token, $email)
+    public function __construct(
+        public UserInvitation $invitation
+    ) {}
+
+    /**
+     * Get the message envelope.
+     * This defines the subject line of the email.
+     */
+    public function envelope(): Envelope
     {
-        $this->token = $token;
-        $this->email = $email;
+        return new Envelope(
+            subject: 'You Have Been Invited to Join the Team',
+        );
     }
 
     /**
-     * Build the message.
-     *
-     * @return $this
+     * Get the message content definition.
+     * This tells Laravel which view file to use for the email's body.
      */
-    public function build()
+    public function content(): Content
     {
-        // Build the reset URL that will be used in the email template
-        $resetUrl = route('password.reset', ['token' => $this->token, 'email' => $this->email]);
+        return new Content(
+            view: 'emails.invitation',
+        );
+    }
 
-        return $this->subject('Reset Your Password')
-            ->view('emails.forgot-password', ['resetUrl' => $resetUrl]);
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
     }
 }
