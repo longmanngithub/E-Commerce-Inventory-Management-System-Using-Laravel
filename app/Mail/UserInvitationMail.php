@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ForgotPasswordMail extends Mailable
+class UserInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
