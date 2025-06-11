@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     {{-- Note: The user ID could be admin_id or staff_id --}}
-                    <form method="POST" action="{{ route('admin.users.update', $user->admin_id ?? $user->staff_id) }}">
+                    <form method="POST" action="{{ route('management.users.update.staff', $user->staff_id) }}">
                         @csrf
                         @method('PUT')
 
@@ -43,7 +43,7 @@
                         @endif
 
                         <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('admin.users.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">Cancel</a>
+                            <a href="{{ route('management.users.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">Cancel</a>
                             <x-primary-button>
                                 {{ __('Save Changes') }}
                             </x-primary-button>

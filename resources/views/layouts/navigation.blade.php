@@ -29,10 +29,16 @@
 
                     {{-- Users view --}}
                     @if(Auth::guard('company_admin')->check())
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('management.users.*')">
+                        <x-nav-link :href="route('management.users.index')" :active="request()->routeIs('management.users.*')">
                             {{ __('Users') }}
                         </x-nav-link>
                     @endif
+
+                    {{-- Company view --}}
+                    <x-nav-link :href="route('management.company.edit')" :active="request()->routeIs('management.company.*')">
+                        {{ __('Company') }}
+                    </x-nav-link>
+
                 </div>
             </div>
 

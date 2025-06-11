@@ -46,11 +46,16 @@
                                 {{-- Display Product Image --}}
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($purchase->product->product_image)
-                                        <img src="{{ asset('storage/' . $purchase->product->product_image) }}" alt="{{ $purchase->product->product_name }}" class="h-16 w-16 object-cover">
+                                        <div class="h-16 w-16">
+                                            <img src="{{ asset('storage/' . $purchase->product->product_image) }}" alt="{{ $purchase->product->product_name }}" class="h-full w-full object-contain">
+                                        </div>
                                     @else
-                                        <span class="h-10 w-10 bg-gray-200 flex items-center justify-center text-xs">No img</span>
+                                        <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
+                                            <span class="text-xs text-gray-500">No img</span>
+                                        </div>
                                     @endif
                                 </td>
+
                                 {{-- Product Name --}}
                                 <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $purchase->product->product_name }}</td>
 

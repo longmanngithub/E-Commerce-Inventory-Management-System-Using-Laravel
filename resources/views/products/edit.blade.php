@@ -18,10 +18,31 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+                            {{-- Product image --}}
+                            <div class="md:col-span-2">
+                                <x-input-label :value="__('Current Image')" />
+                                <div class="mt-2">
+                                    @if ($product->product_image)
+                                        <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-40 w-auto rounded-md object-contain">
+                                    @else
+                                        <p class="text-sm text-gray-500">No image has been uploaded for this product.</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <x-input-label for="product_image" :value="__('Upload New Image (Optional)')" />
+                                <input id="product_image" name="product_image" type="file" class="block mt-1 w-full">
+                                <x-input-error :messages="$errors->get('product_image')" class="mt-2" />
+                            </div>
+
+                            {{-- Product name --}}
                             <div>
                                 <x-input-label for="product_name" :value="__('Product Name')" />
                                 <x-text-input id="product_name" ... :value="old('product_name', $product->product_name)" disabled class="block mt-1 w-full bg-gray-100" />
                             </div>
+
+                            {{-- Category --}}
                             <div>
                                 <x-input-label for="category_id" :value="__('Category')" />
                                 <select name="category_id" id="category_id" disabled class="block mt-1 w-full border-gray-300 rounded-md shadow-sm bg-gray-100">
@@ -32,9 +53,11 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            {{-- Product SKU --}}
                             <div>
                                 <x-input-label for="product_SKU" :value="__('Product SKU')" />
-                                <x-text-input id="product_SKU" name="product_SKU" type="text" class="block mt-1 w-full" :value="old('product_SKU', $product->product_SKU)" disabled />
+                                <x-text-input id="product_SKU" name="product_SKU" type="text" class="block mt-1 w-full" :value="old('product_SKU', $product->product_SKU)" readonly />
                             </div>
 
                             {{-- NEW: Display Total Stock (Read-Only) --}}
