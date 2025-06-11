@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Mail\ForgotPasswordMail;
+use App\Mail\UserInvitationMail;
 use App\Mail\SendVerificationCodeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +40,7 @@ class CompanyAdminPasswordResetController extends Controller
             $token = Password::broker($broker)->createToken($user);
 
             // Send the email directly using our custom ForgotPasswordMail mailable
-            Mail::to($user->getEmailForPasswordReset())->send(new ForgotPasswordMail($token, $user->getEmailForPasswordReset()));
+            Mail::to($user->getEmailForPasswordReset())->send(new UserInvitationMail($token, $user->getEmailForPasswordReset()));
 
             return back()->with('status', 'We have e-mailed your password reset link!');
         }

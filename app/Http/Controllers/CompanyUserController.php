@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserInvitationMail;
 use App\Models\CompanyAdmin;
 use App\Models\CompanyStaff;
 use Illuminate\Http\Request;
@@ -9,7 +10,6 @@ use App\Models\UserInvitation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\UserInvitationMail;
 
 class CompanyUserController extends Controller
 {
@@ -68,6 +68,42 @@ class CompanyUserController extends Controller
         // Send an email to the user with the special link
         Mail::to($request->email)->send(new UserInvitationMail($invitation));
 
-        return redirect()->route('admin.users.index')->with('status', 'Invitation sent successfully!');
+        return redirect()->route('users.index')->with('status', 'Invitation sent successfully!');
+    }
+
+    public function edit($id)
+    {
+        // Find the user. Check the admin table first, then the staff table.
+        $user = \App\Models\CompanyAdmin::find($id);
+        if (!$user) {
+            $user = \App\Models\CompanyStaff::find($id);
+        }
+
+        if (!$user || $user->company_id !== Auth::user()->company_id) {
+            abort(404); // Or 403 for forbidden
+        }
+
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        // Find the user again
+        $user = \App\Models\CompanyStaff::find($id);
+
+        // We only allow editing permissions for staff members for now
+        if (!$user || $user->company_id !== Auth::user()->company_id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|in:create_product,update_product,delete_product', // Only allow these specific values
+        ]);
+
+        $user->permissions = $request->input('permissions', []);
+        $user->save();
+
+        return redirect()->route('admin.users.index')->with('status', 'User permissions updated successfully!');
     }
 }
