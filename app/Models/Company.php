@@ -52,4 +52,10 @@ class Company extends Model
     {
         return $this->hasMany(Category::class, 'company_id');
     }
+
+    // A Company has one Subscription Order
+    public function subscription()
+    {
+        return $this->hasOne(SubscriptionOrder::class, 'company_id');
+    }
 }
