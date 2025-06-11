@@ -25,7 +25,16 @@ class InvitationController extends Controller
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
-        $invitation = UserInvitation::where('token', $data['token'])->firstOrFail();
+        // First, log out any user who is currently logged in (like the admin).
+        Auth::guard('company_admin')->logout();
+        Auth::guard('company_staff')->logout();
+        Auth::guard('platform_owner')->logout();
+
+        // Invalidate the old session to be absolutely sure.
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $invitation = \App\Models\UserInvitation::where('token', $data['token'])->firstOrFail();
 
         // Determine which model to use based on the role stored in the invitation
         $model = $invitation->role === 'admin' ? CompanyAdmin::class : CompanyStaff::class;
@@ -38,9 +47,12 @@ class InvitationController extends Controller
             $emailField => $invitation->email,
             $passwordField => Hash::make($data['password']),
             'company_id' => $invitation->company_id,
+
+            // If the user is a staff member, set their permissions
+            'permissions' => $invitation->role === 'staff' ? $invitation->permissions : [],
         ]);
 
-        // Log the new user in
+        // Now, log the NEW user in with a clean session.
         Auth::guard('company_' . $invitation->role)->login($user);
 
         // Delete the invitation so it can't be used again

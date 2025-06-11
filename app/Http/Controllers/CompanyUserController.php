@@ -33,6 +33,11 @@ class CompanyUserController extends Controller
         return view('users.index', compact('users'));
     }
 
+    /**
+     * Create user
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|object
+     */
     public function create()
     {
         // Add authorization: only admins can create users
@@ -43,6 +48,12 @@ class CompanyUserController extends Controller
         return view('users.create');
     }
 
+    /**
+     * Store user info
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         if (! Auth::guard('company_admin')->check()) { abort(403); }
@@ -50,11 +61,12 @@ class CompanyUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'role' => ['required', 'string', 'in:admin,staff'], // A new field to select the role
+            'role' => ['required', 'string', 'in:admin,staff'],
+            'permissions' => 'nullable|array',
         ]);
 
         // Generate a secure, random token
-        $token = Str::uuid()->toString();
+        $token = \Illuminate\Support\Str::uuid()->toString();
 
         // Store the invitation in our new table
         $invitation = UserInvitation::create([
@@ -62,48 +74,87 @@ class CompanyUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'token' => $token
+            'token' => $token,
+            'permissions' => $request->role === 'staff' ? $request->input('permissions', []) : null,
         ]);
 
         // Send an email to the user with the special link
-        Mail::to($request->email)->send(new UserInvitationMail($invitation));
+        Mail::to($request->email)->send(new \App\Mail\UserInvitationMail($invitation));
 
-        return redirect()->route('users.index')->with('status', 'Invitation sent successfully!');
+        return redirect()->route('management.users.index')->with('status', 'Invitation sent successfully!');
     }
 
-    public function edit($id)
+    /**
+     * Edit staff permissions
+     *
+     * @param $id
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Foundation\Application|object
+     */
+    public function editStaff($id)
     {
-        // Find the user. Check the admin table first, then the staff table.
-        $user = \App\Models\CompanyAdmin::find($id);
-        if (!$user) {
-            $user = \App\Models\CompanyStaff::find($id);
-        }
+        $staff = CompanyStaff::where('staff_id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->firstOrFail();
 
-        if (!$user || $user->company_id !== Auth::user()->company_id) {
-            abort(404); // Or 403 for forbidden
-        }
-
-        return view('users.edit', compact('user'));
+        return view('users.edit', ['user' => $staff]);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Update staff permissions
+     *
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateStaff(Request $request, $id)
     {
-        // Find the user again
-        $user = \App\Models\CompanyStaff::find($id);
-
-        // We only allow editing permissions for staff members for now
-        if (!$user || $user->company_id !== Auth::user()->company_id) {
-            abort(403);
-        }
+        $staff = CompanyStaff::where('staff_id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->firstOrFail();
 
         $request->validate([
             'permissions' => 'nullable|array',
-            'permissions.*' => 'string|in:create_product,update_product,delete_product', // Only allow these specific values
+            'permissions.*' => 'string|in:create_product,update_product,delete_product',
         ]);
 
-        $user->permissions = $request->input('permissions', []);
-        $user->save();
+        $staff->permissions = $request->input('permissions', []);
+        $staff->save();
 
-        return redirect()->route('admin.users.index')->with('status', 'User permissions updated successfully!');
+        return redirect()->route('management.users.index')->with('status', 'Staff permissions updated successfully!');
+    }
+
+    /**
+     * Delete staff account
+     *
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroyStaff($id)
+    {
+        $staff = CompanyStaff::where('staff_id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->firstOrFail();
+        $staff->delete();
+        return redirect()->route('management.users.index')->with('status', 'Staff user has been deleted.');
+    }
+
+    /**
+     * Delete admin account
+     *
+     * @param $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroyAdmin($id)
+    {
+        $adminToDelete = CompanyAdmin::where('admin_id', $id)
+            ->where('company_id', Auth::user()->company_id)
+            ->firstOrFail();
+
+        if ($adminToDelete->admin_id === Auth::user()->admin_id) {
+            return redirect()->route('management.users.index')->with('error', 'You cannot delete your own account.');
+        }
+
+        $adminToDelete->delete();
+        return redirect()->route('management.users.index')->with('status', 'Admin user has been deleted.');
     }
 }

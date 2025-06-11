@@ -10,8 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+
 class ProductController extends Controller
 {
+    use AuthorizesRequests, ValidatesRequests;
+
     public function index(Request $request)
     {
         // Start a base query for products belonging to the user's company
@@ -68,12 +73,12 @@ class ProductController extends Controller
             'product_SKU' => 'required|string|unique:product,product_SKU',
             'category_id' => 'required|integer|exists:category,category_id',
             'stock_quantity' => 'required|integer|min:0',
-            'purchase_price' => 'required|numeric|min:0', // Correctly validating the new field
             'product_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date',
+            'purchase_date' => 'required|date|before_or_equal:today',
             'product_expiry_date' => 'nullable|date',
             'product_desc' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
+            'purchase_price' => 'required|numeric|min:0'
         ]);
 
         $companyId = auth()->user()->company_id;
@@ -138,9 +143,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         // 1. Validate only the fields that are editable.
-        // 'product_expiry_date' has been removed from validation.
         $validatedData = $request->validate([
-            'product_SKU' => ['required', 'string', Rule::unique('product', 'product_SKU')->ignore($product->product_id, 'product_id')],
             'product_price' => 'required|numeric|min:0',
             'product_desc' => 'nullable|string', // Description is still validated and saved
             'stock_quantity' => 'nullable|integer|min:0',
@@ -148,9 +151,7 @@ class ProductController extends Controller
         ]);
 
         // 2. Update the Product model with its editable fields.
-        // 'product_expiry_date' has been removed from this update list.
         $product->update($request->only([
-            'product_SKU',
             'product_price',
             'product_desc',
         ]));
@@ -165,6 +166,11 @@ class ProductController extends Controller
 
         // 4. Handle image update
         if ($request->hasFile('product_image')) {
+            // Optional: Delete the old image to save space
+            if ($product->product_image) {
+                Storage::disk('public')->delete($product->product_image);
+            }
+            // Store the new image and update the database path
             $imagePath = $request->file('product_image')->store('product-images', 'public');
             $product->update(['product_image' => $imagePath]);
         }
@@ -177,7 +183,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Thanks to Route-Model Binding, Laravel automatically finds the product for us.
+        $this->authorize('delete-product', $product);
 
         // 1. Delete the product's image from storage to keep things clean.
         //    We check if an image exists before trying to delete it.
@@ -222,6 +228,9 @@ class ProductController extends Controller
      */
     public function bulkDestroy(Request $request)
     {
+        // Authorize the action before doing anything else
+        $this->authorize('bulk-delete-products', Product::class);
+
         $request->validate([
             'product_ids' => 'required|array',
             'product_ids.*' => 'integer|exists:product,product_id',
