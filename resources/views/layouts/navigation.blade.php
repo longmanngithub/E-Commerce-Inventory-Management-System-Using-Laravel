@@ -12,10 +12,22 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    {{-- Dashboard view --}}
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    {{-- Products view --}}
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                        {{ __('Products') }}
+                    </x-nav-link>
+
+                    {{-- Orders view --}}
+                    <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
+                        {{ __('Orders') }}
+                    </x-nav-link>
+
+                    {{-- Users view --}}
                     @if(Auth::guard('company_admin')->check())
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('management.users.*')">
                             {{ __('Users') }}
