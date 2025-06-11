@@ -19,6 +19,7 @@ class CompanyStaff extends Authenticatable
         'staff_name',
         'staff_email',
         'staff_password',
+        'permissions',
         'staff_image',
         'company_id',
     ];
@@ -54,6 +55,15 @@ class CompanyStaff extends Authenticatable
     {
         return $this->staff_email;
     }
+
+    /**
+     * The attributes that should be cast.
+     * This automatically converts the JSON column to and from an array.
+     * @var array
+     */
+    protected $casts = [
+        'permissions' => 'array', // <-- ADD THIS
+    ];
 
     /**
      * Get the audit logs for the staff member.

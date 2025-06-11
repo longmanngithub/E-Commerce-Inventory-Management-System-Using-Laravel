@@ -16,6 +16,7 @@ class Stock extends Model
     protected $fillable = [
         'product_id',
         'stock_quantity',
+        'purchase_price',
         'stock_purchase_date',
         'company_id',
     ];

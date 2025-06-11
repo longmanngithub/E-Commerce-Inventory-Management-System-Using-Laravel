@@ -30,11 +30,11 @@ class Order extends Model
     // An order belongs to one customer
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
 
     // An order has many items
-    public function items()
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class, 'order_id');
     }
