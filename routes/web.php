@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\CompanyUserController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductHistoryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -53,16 +56,25 @@ Route::post('/verify-code', [CompanyAdminPasswordResetController::class, 'verify
 
 // This group is for pages BOTH Admins and Staff can see
 Route::middleware('auth:company_admin,company_staff')->group(function () {
+    // Dashboard view
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    // Product view
+    Route::resource('products', ProductController::class);
+    Route::get('/product-history/{productName}', [ProductHistoryController::class, 'show'])->name('products.history');
+    Route::delete('/products', [ProductController::class, 'bulkDestroy'])->name('products.bulkDestroy');
+
+    // Order view
+    Route::resource('orders', OrderController::class);
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    Route::get('/orders/{order}/export', [OrderController::class, 'exportCsv'])->name('orders.export');
 });
 
 // This group is ONLY for Company Admins
 Route::middleware('auth:company_admin')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [CompanyUserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [CompanyUserController::class, 'create'])->name('users.create');
-    Route::post('/users', [CompanyUserController::class, 'store'])->name('users.store');
+    Route::resource('users', CompanyUserController::class);
 });
 
 
