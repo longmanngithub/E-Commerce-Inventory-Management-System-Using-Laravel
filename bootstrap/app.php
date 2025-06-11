@@ -11,8 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Middleware configuration goes here
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+        // Exception handling configuration goes here
+    })
+    ->withProviders([
+        App\Providers\AuthServiceProvider::class,
+    ])
+    ->create();
