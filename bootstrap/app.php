@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Middleware configuration goes here
+        $middleware->alias([
+            'onboarding' => \App\Http\Middleware\EnsureUserIsOnboarding::class,
+            'subscribed' => \App\Http\Middleware\CheckSubscription::class,
+            'check.company.status' => \App\Http\Middleware\CheckCompanyStatus::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Exception handling configuration goes here
