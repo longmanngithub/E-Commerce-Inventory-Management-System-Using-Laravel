@@ -30,6 +30,7 @@
                                 </div>
                             </div>
 
+                            {{-- Product image --}}
                             <div class="md:col-span-2">
                                 <x-input-label for="product_image" :value="__('Upload New Image (Optional)')" />
                                 <input id="product_image" name="product_image" type="file" class="block mt-1 w-full">
@@ -60,10 +61,17 @@
                                 <x-text-input id="product_SKU" name="product_SKU" type="text" class="block mt-1 w-full" :value="old('product_SKU', $product->product_SKU)" readonly />
                             </div>
 
-                            {{-- NEW: Display Total Stock (Read-Only) --}}
+                            {{-- Display Total Stock (Read-Only) --}}
                             <div>
                                 <x-input-label for="total_stock" :value="__('Total Stock Quantity (Calculated)')" />
                                 <x-text-input id="total_stock" type="number" class="block mt-1 w-full bg-gray-100" value="{{ $product->stocks->sum('stock_quantity') }}" disabled />
+                            </div>
+
+                            {{-- EDITABLE: Reorder point --}}
+                            <div>
+                                <x-input-label for="reorder_point" :value="__('Reorder Point (e.g., 10)')" />
+                                <x-text-input id="reorder_point" class="block mt-1 w-full" type="number" name="reorder_point" :value="old('reorder_point', $product->reorder_point)" required />
+                                <x-input-error :messages="$errors->get('reorder_point')" class="mt-2" />
                             </div>
 
                             {{-- Purchase price --}}
