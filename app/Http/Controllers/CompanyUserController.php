@@ -10,6 +10,7 @@ use App\Models\UserInvitation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class CompanyUserController extends Controller
 {
@@ -60,7 +61,10 @@ class CompanyUserController extends Controller
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255',
+                            Rule::unique('company_admin', 'admin_email'), // Must not exist in the admin table
+                            Rule::unique('company_staff', 'staff_email'), // Must not exist in the staff table
+                        ],
             'role' => ['required', 'string', 'in:admin,staff'],
             'permissions' => 'nullable|array',
         ]);
@@ -149,6 +153,10 @@ class CompanyUserController extends Controller
         $adminToDelete = CompanyAdmin::where('admin_id', $id)
             ->where('company_id', Auth::user()->company_id)
             ->firstOrFail();
+
+        if ($adminToDelete->is_owner) {
+            return redirect()->route('management.users.index')->with('error', 'You cannot delete the primary company owner.');
+        }
 
         if ($adminToDelete->admin_id === Auth::user()->admin_id) {
             return redirect()->route('management.users.index')->with('error', 'You cannot delete your own account.');

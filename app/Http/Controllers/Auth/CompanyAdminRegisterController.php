@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\CompanyAdmin;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Company;
 use Illuminate\View\View;
@@ -22,28 +23,55 @@ class CompanyAdminRegisterController extends Controller
     }
 
     /**
-     * Handle the first step of registration.
+     * Store the account registration
+     *
+     * @param Request $request
+     * @return RedirectResponse
      */
-    public function register(Request $request)
+    public function storeRegistration(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:company_admin,admin_email'],
-            'password' => ['required', 'string', 'confirmed', 'min:8'],
+        // 1. Validate ALL data from both forms at once
+        $validated = $request->validate([
+            'user_name' => ['required', 'string', 'max:255'],
+            'user_email' => ['required', 'string', 'email', 'max:255', 'unique:company_admin,admin_email'],
+            'user_password' => ['required', 'string', 'confirmed', 'min:8'],
+            'company_name' => ['required', 'string', 'max:128'],
+            'company_email' => ['required', 'string', 'email', 'max:128', 'unique:company,company_email'],
+            'company_address' => ['required', 'string', 'max:255'],
         ]);
 
-        // Create the admin user in the database
-        $admin = CompanyAdmin::create([
-            'admin_name' => $request->name,
-            'admin_email' => $request->email,
-            'admin_password' => Hash::make($request->password),
-        ]);
+        // 2. Use a Database Transaction for safety
+        try {
+            DB::transaction(function () use ($validated,  $request) {
+                // First, create the company
+                $company = Company::create([
+                    'company_name' => $validated['company_name'],
+                    'company_email' => $validated['company_email'],
+                    'company_address' => $validated['company_address'],
+                    'register_date' => now(),
+                ]);
 
-        // Store the new admin's ID in the session to track them through the flow
-        $request->session()->put('new_admin_id', $admin->admin_id);
+                // Then, create the admin and link them to the new company
+                $admin = CompanyAdmin::create([
+                    'admin_name' => $validated['user_name'],
+                    'admin_email' => $validated['user_email'],
+                    'admin_password' => Hash::make($validated['user_password']),
+                    'company_id' => $company->company_id,
+                    'is_owner' => true,
+                ]);
 
-        // Redirect to the next step
-        return redirect()->route('register.company.show');
+                Auth::guard('company_admin')->login($admin);
+
+                // Regenerate the session after logging in
+                $request->session()->regenerate();
+            });
+        } catch (\Exception $e) {
+            // If anything fails, redirect back with an error
+            return redirect()->back()->withInput()->with('error', 'Registration failed. Please try again.');
+        }
+
+        // 3. If the transaction was successful, redirect to the subscription plans page
+        return redirect()->route('subscription.plans');
     }
 
     /**
@@ -51,49 +79,14 @@ class CompanyAdminRegisterController extends Controller
      */
     public function showCompanyForm(Request $request)
     {
-        // Ensure user has completed step 1
-        if (!$request->session()->has('new_admin_id')) {
-            return redirect()->route('register.show');
-        }
-        return view('auth.company-register');
-    }
-
-    /**
-     * Handle the second step of registration.
-     */
-    public function storeCompany(Request $request)
-    {
-        // Ensure user has completed step 1
-        if (!$request->session()->has('new_admin_id')) {
-            return redirect()->route('register.show');
-        }
-
-        $request->validate([
-            'company_name' => ['required', 'string', 'max:128'],
-            'company_email' => ['required', 'string', 'email', 'max:128', 'unique:company,company_email'],
-            'company_address' => ['required', 'string', 'max:255'],
+        // Validate the first step's data
+        $userData = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:company_admin,admin_email'],
+            'password' => ['required', 'string', 'confirmed', 'min:8'],
         ]);
 
-        $company = Company::create([
-            'company_name' => $request->company_name,
-            'company_email' => $request->company_email,
-            'company_address' => $request->company_address,
-            'register_date' => now(),
-        ]);
-
-        // Link the company to the admin user we created in step 1
-        $adminId = $request->session()->get('new_admin_id');
-        $admin = CompanyAdmin::find($adminId);
-        $admin->company_id = $company->company_id;
-        $admin->save();
-
-        // At this point you would redirect to the Choose Plan / Payment page.
-        // For now, let's log the user in.
-        Auth::guard('company_admin')->login($admin);
-
-        // Forget the session variable
-        $request->session()->forget('new_admin_id');
-
-        return redirect()->route('subscription.plans');
+        // Pass the validated user data to the company registration view
+        return view('auth.company-register', compact('userData'));
     }
 }
