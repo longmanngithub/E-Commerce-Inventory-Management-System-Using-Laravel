@@ -42,4 +42,13 @@ class PlatformOwner extends Authenticatable
     {
         return $this->owner_password;
     }
+
+    /**
+     * Get user type
+     *
+     * @return string
+     */
+    public function getAuthGuard() {
+        return 'platform_owner';
+    }
 }

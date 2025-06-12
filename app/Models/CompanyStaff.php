@@ -28,9 +28,20 @@ class CompanyStaff extends Authenticatable
         'staff_password',
     ];
 
+    protected $guard_name = 'company_staff';
+
     public function getAuthPassword()
     {
         return $this->staff_password;
+    }
+
+    /**
+     * Get user type
+     *
+     * @return string
+     */
+    public function getAuthGuard() {
+        return 'company_staff';
     }
 
     /**

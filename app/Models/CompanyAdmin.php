@@ -20,6 +20,7 @@ class CompanyAdmin extends Authenticatable
         'admin_name',
         'admin_email',
         'admin_password',
+        'is_owner',
         'company_id',
     ];
 
@@ -30,12 +31,27 @@ class CompanyAdmin extends Authenticatable
         'admin_password',
     ];
 
+    protected $guard_name = 'company_admin';
+
+    protected $casts = [
+        'is_owner' => 'boolean',
+    ];
+
     /**
      * Override the password column for authentication.
      */
     public function getAuthPassword()
     {
         return $this->admin_password;
+    }
+
+    /**
+     * Get user type
+     *
+     * @return string
+     */
+    public function getAuthGuard() {
+        return 'company_admin';
     }
 
     /**

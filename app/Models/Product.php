@@ -23,6 +23,7 @@ class Product extends Model
     protected $fillable = [
         'product_name',
         'product_SKU',
+        'reorder_point',
         'product_expiry_date',
         'product_price',
         'product_desc',
@@ -62,21 +63,24 @@ class Product extends Model
      */
     protected function stockStatus(): Attribute
     {
-        // First, we define our thresholds. Let's say "low stock" is 10 items or less.
-        $lowStockThreshold = 10;
-
-        // We get the quantity from the related stock record.
-        // We use the '?' nullsafe operator in case a product has no stock record yet.
-        $quantity = $this->stocks->sum('stock_quantity');
-
         return Attribute::make(
-            get: function () use ($quantity, $lowStockThreshold) {
-                if ($quantity === null || $quantity <= 0) {
+            get: function () {
+                // Get the total stock quantity for this product.
+                $quantity = $this->stocks->sum('stock_quantity');
+
+                // Get this specific product's reorder point.
+                // We use '?? 10' as a safe fallback in case it's null.
+                $reorderPoint = $this->reorder_point ?? 10;
+
+                if ($quantity <= 0) {
                     return 'Out of Stock';
                 }
-                if ($quantity <= $lowStockThreshold) {
+
+                // Compare the quantity against the product's own reorder point.
+                if ($quantity <= $reorderPoint) {
                     return 'Low Stock';
                 }
+
                 return 'In Stock';
             },
         );

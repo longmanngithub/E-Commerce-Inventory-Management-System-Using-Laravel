@@ -15,6 +15,7 @@ class Company extends Model
 
     protected $fillable = [
         'company_name',
+        'status',
         'company_address',
         'company_email',
         'company_telephone',
@@ -26,36 +27,36 @@ class Company extends Model
     // A company has many products
     public function products()
     {
-        return $this->hasMany(Product::class, 'company_id');
+        return $this->hasMany(Product::class, 'company_id', 'company_id');
     }
 
     // A company has many staff members
     public function staff()
     {
-        return $this->hasMany(CompanyStaff::class, 'company_id');
+        return $this->hasMany(CompanyStaff::class, 'company_id', 'company_id');
     }
 
     // A company has many admins
     public function admins()
     {
-        return $this->hasMany(CompanyAdmin::class, 'company_id');
+        return $this->hasMany(CompanyAdmin::class, 'company_id', 'company_id');
     }
 
     // A company has many orders
     public function orders()
     {
-        return $this->hasMany(Order::class, 'company_id');
+        return $this->hasMany(Order::class, 'company_id', 'company_id');
     }
 
     // A company has many categories
     public function categories()
     {
-        return $this->hasMany(Category::class, 'company_id');
+        return $this->hasMany(Category::class, 'company_id', 'company_id');
     }
 
     // A Company has one Subscription Order
     public function subscription()
     {
-        return $this->hasOne(SubscriptionOrder::class, 'company_id');
+        return $this->hasOne(SubscriptionOrder::class, 'company_id', 'company_id');
     }
 }
