@@ -79,5 +79,10 @@ class AuthServiceProvider extends ServiceProvider
             }
             return false;
         });
+
+        Gate::define('deactivate-company', function (CompanyAdmin $admin) {
+            // Only allow the action if the admin's 'is_owner' flag is true.
+            return $admin->is_owner === true;
+        });
     }
 }
