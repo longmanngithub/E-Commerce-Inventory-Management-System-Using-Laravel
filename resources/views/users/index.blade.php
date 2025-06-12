@@ -61,7 +61,7 @@
                                             </form>
                                         @else
                                             {{-- Actions for Admins --}}
-                                            @if(Auth::user()->admin_id !== $user->admin_id)
+                                            @if(Auth::user()->id !== $user->admin_id && !$user->is_owner)
                                                 <form action="{{ route('management.users.destroy.admin', $user->admin_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
                                                     @csrf
                                                     @method('DELETE')

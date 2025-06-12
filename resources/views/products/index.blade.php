@@ -320,10 +320,6 @@
                         @method('DELETE')
                     </form>
 
-                    <div class="mt-4">
-                        {{ $products->links() }}
-                    </div>
-
 
                     {{-- Add pagination links --}}
                     <div class="mt-4">
