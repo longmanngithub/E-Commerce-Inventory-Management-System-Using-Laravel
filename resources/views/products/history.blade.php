@@ -36,7 +36,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase Price</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase Date</th>
                         </tr>
                         </thead>
@@ -71,7 +71,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $purchase->stock_quantity }}</td>
 
                                 {{-- We can access the product's price via the relationship --}}
-                                <td class="px-6 py-4 whitespace-nowrap">${{ number_format($purchase->product->product_price, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${{ number_format($purchase->purchase_price, 2) }}</td>
 
                                 {{-- Display purchase date --}}
                                 <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($purchase->stock_purchase_date)->format('Y-m-d') }}</td>
