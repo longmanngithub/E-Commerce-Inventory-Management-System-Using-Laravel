@@ -78,7 +78,8 @@ class ProductController extends Controller
             'product_expiry_date' => 'nullable|date',
             'product_desc' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
-            'purchase_price' => 'required|numeric|min:0'
+            'purchase_price' => 'required|numeric|min:0',
+            'reorder_point' => 'required|integer|min:0',
         ]);
 
         $companyId = auth()->user()->company_id;
@@ -94,6 +95,7 @@ class ProductController extends Controller
             'product_desc' => $validatedData['product_desc'],
             'product_image' => $imagePath,
             'product_expiry_date' => $validatedData['product_expiry_date'],
+            'reorder_point' => $validatedData['reorder_point'],
         ]);
 
         // 3. Create the initial Stock record. NOTE: 'purchase_price' has been ADDED here.
@@ -148,12 +150,14 @@ class ProductController extends Controller
             'product_desc' => 'nullable|string', // Description is still validated and saved
             'stock_quantity' => 'nullable|integer|min:0',
             'product_image' => 'nullable|image|max:2048',
+            'reorder_point' => 'required|integer|min:0',
         ]);
 
         // 2. Update the Product model with its editable fields.
         $product->update($request->only([
             'product_price',
             'product_desc',
+            'reorder_point',
         ]));
 
         // 3. Find and update the most recent stock record's quantity if provided
