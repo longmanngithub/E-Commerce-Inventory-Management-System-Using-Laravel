@@ -4,8 +4,24 @@
         <p class="text-sm text-gray-600">Let us know about your company</p>
     </div>
 
+    @php
+        // When the first form submits here, we'll have the user data in the request.
+        // We are using old() to repopulate the fields in case of a validation error on this page.
+        $userName = old('user_name', request()->name);
+        $userEmail = old('user_email', request()->email);
+        $userPassword = old('user_password', request()->password);
+        $userPasswordConfirmation = old('user_password_confirmation', request()->password_confirmation);
+    @endphp
+
     <form method="POST" action="{{ route('register.company.store') }}">
         @csrf
+
+        {{-- Hidden fields to carry over the user data --}}
+        <input type="hidden" name="user_name" value="{{ $userName }}">
+        <input type="hidden" name="user_email" value="{{ $userEmail }}">
+        <input type="hidden" name="user_password" value="{{ $userPassword }}">
+        <input type="hidden" name="user_password_confirmation" value="{{ $userPasswordConfirmation }}">
+
 
         <div>
             <x-input-label for="company_name" :value="__('Company Name')" />
