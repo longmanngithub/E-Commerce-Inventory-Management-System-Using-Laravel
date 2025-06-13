@@ -46,7 +46,6 @@ class CompanyController extends Controller
 
         // Validate the incoming form data
         $validatedData = $request->validate([
-            'company_name' => 'required|string|max:128',
             'company_email' => 'required|email|max:128',
             'company_website' => 'nullable|url|max:255',
             'company_telephone' => 'nullable|string|max:32',
