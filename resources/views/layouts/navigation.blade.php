@@ -27,16 +27,29 @@
                         {{ __('Orders') }}
                     </x-nav-link>
 
-                    {{-- Users view --}}
+                    {{-- ADMIN ONLY --}}
                     @if(Auth::guard('company_admin')->check())
+
+                        {{-- Users view --}}
                         <x-nav-link :href="route('management.users.index')" :active="request()->routeIs('management.users.*')">
                             {{ __('Users') }}
                         </x-nav-link>
+
+                        {{-- Company view --}}
+                        <x-nav-link :href="route('management.company.edit')" :active="request()->routeIs('management.company.*')">
+                            {{ __('Company') }}
+                        </x-nav-link>
+
+                        {{-- Logs view --}}
+                        <x-nav-link :href="route('management.logs.index')" :active="request()->routeIs('management.logs.*')">
+                            {{ __('Logs') }}
+                        </x-nav-link>
+
                     @endif
 
-                    {{-- Company view --}}
-                    <x-nav-link :href="route('management.company.edit')" :active="request()->routeIs('management.company.*')">
-                        {{ __('Company') }}
+                    {{-- Analytics Report view --}}
+                    <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('admin.analytics.index')">
+                        {{ __('Analytics Report') }}
                     </x-nav-link>
 
                 </div>
@@ -62,16 +75,22 @@
 {{--                            {{ __('Profile') }}--}}
 {{--                        </x-dropdown-link>--}}
 
+                        {{-- This checks which user is logged in and generates the correct route --}}
+                        <x-dropdown-link :href="Auth::guard('platform_owner')->check() ? route('platform_owner.profile.edit') : route('admin.profile.edit')">
+                            {{ __('Account Settings') }}
+                        </x-dropdown-link>
+
                         <!-- Authentication -->
-                        <form method="POST" action="{{ Auth::guard('platform_owner')->check() ? route('owner.logout') : route('admin.logout') }}">
+                        <form method="POST" action="{{ Auth::guard('platform_owner')->check() ? route('owner.logout') : route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="Auth::guard('platform_owner')->check() ? route('owner.logout') : route('admin.logout')"
+                            <x-dropdown-link :href="Auth::guard('platform_owner')->check() ? route('owner.logout') : route('logout')"
                                              onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
+
                     </x-slot>
                 </x-dropdown>
             </div>
@@ -109,15 +128,16 @@
 {{--                </x-responsive-nav-link>--}}
 
                 <!-- Authentication -->
-                <form method="POST" action="{{ Auth::guard('platform_owner')->check() ? route('owner.logout') : route('admin.logout') }}">
+                <form method="POST" action="{{ Auth::guard('platform_owner')->check() ? route('owner.logout') : route('logout') }}">
                     @csrf
 
-                    <x-dropdown-link :href="Auth::guard('platform_owner')->check() ? route('owner.logout') : route('admin.logout')"
+                    <x-dropdown-link :href="Auth::guard('platform_owner')->check() ? route('owner.logout') : route('logout')"
                                      onclick="event.preventDefault();
                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-dropdown-link>
                 </form>
+
             </div>
         </div>
     </div>
