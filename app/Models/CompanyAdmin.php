@@ -76,4 +76,16 @@ class CompanyAdmin extends Authenticatable
     {
         return $this->admin_email;
     }
+
+    /**
+     * Get all of the admin's audit logs.
+     */
+    public function logs()
+    {
+        return $this->morphMany(AuditLog::class, 'user');
+    }
+
+    public function getNameAttribute() {
+        return $this->admin_name;
+    }
 }

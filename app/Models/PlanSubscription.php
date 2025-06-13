@@ -16,6 +16,7 @@ class PlanSubscription extends Model
     protected $fillable = [
         'subscription_tier',
         'subscription_price',
+        'product_limit',
         'monthly',
     ];
 }

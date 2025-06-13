@@ -51,4 +51,12 @@ class SubscriptionOrder extends Model
     {
         return $this->belongsTo(CompanyStaff::class, 'company_staff_id');
     }
+
+    /**
+     * Get the plan details for this subscription order.
+     */
+    public function plan()
+    {
+        return $this->belongsTo(PlanSubscription::class, 'subscription_tier', 'subscription_tier');
+    }
 }

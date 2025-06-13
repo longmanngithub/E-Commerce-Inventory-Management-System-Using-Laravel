@@ -22,6 +22,7 @@ class Product extends Model
      */
     protected $fillable = [
         'product_name',
+        'status',
         'product_SKU',
         'reorder_point',
         'product_expiry_date',
@@ -84,5 +85,10 @@ class Product extends Model
                 return 'In Stock';
             },
         );
+    }
+
+    public function auditLogs()
+    {
+        return $this->morphMany(AuditLog::class, 'subject');
     }
 }

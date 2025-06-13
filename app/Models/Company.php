@@ -18,6 +18,7 @@ class Company extends Model
         'status',
         'company_address',
         'company_email',
+        'company_website',
         'company_telephone',
         'company_image',
         'company_desc',

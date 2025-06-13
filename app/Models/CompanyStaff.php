@@ -83,4 +83,16 @@ class CompanyStaff extends Authenticatable
     {
         return $this->hasMany(AuditLog::class, 'staff_id');
     }
+
+    /**
+     * Get all of the staff member's audit logs.
+     */
+    public function logs()
+    {
+        return $this->morphMany(AuditLog::class, 'user');
+    }
+
+    public function getNameAttribute() {
+        return $this->admin_name;
+    }
 }

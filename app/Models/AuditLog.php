@@ -28,4 +28,17 @@ class AuditLog extends Model
     {
         return $this->belongsTo(CompanyStaff::class, 'staff_id');
     }
+
+    /**
+     * Get the parent user model (can be a CompanyAdmin or CompanyStaff).
+     */
+    public function user()
+    {
+        return $this->morphTo();
+    }
+
+    public function subject()
+    {
+        return $this->morphTo();
+    }
 }
