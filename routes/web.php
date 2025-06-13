@@ -3,6 +3,8 @@
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyUserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductHistoryController;
@@ -60,7 +62,7 @@ Route::prefix('owner')->name('owner.')->group(function(){
 Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])->group(function () {
 
     // Dashboard view
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('subscribed')->group(function() {
 
@@ -73,7 +75,7 @@ Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])-
         // Products view
         Route::resource('products', ProductController::class);
         Route::delete('/products', [ProductController::class, 'bulkDestroy'])->name('products.bulkDestroy');
-        Route::get('/product-history/{productName}', [ProductHistoryController::class, 'show'])->name('products.history');
+        Route::get('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
 
         // Orders view
         Route::resource('orders', OrderController::class);
@@ -81,6 +83,7 @@ Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])-
         Route::get('/orders/{order}/export', [OrderController::class, 'exportCsv'])->name('orders.export');
 
         Route::get('/analytics-report', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics-report/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
     });
 
     // Subscription view
@@ -111,6 +114,9 @@ Route::middleware(['auth:company_admin', 'subscribed', 'check.company.status'])-
 
     // Admin Delete
     Route::delete('/admins/{id}', [CompanyUserController::class, 'destroyAdmin'])->name('users.destroy.admin');
+
+    // Logs view
+    Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 });
 
 
