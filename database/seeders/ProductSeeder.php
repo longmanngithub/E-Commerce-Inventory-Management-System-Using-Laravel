@@ -17,7 +17,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         $categoryId = 1;
-        $companyId = 8;
+        $companyId = 11;
 
         $sampleNames = [
             'Wireless Mouse', 'Mechanical Keyboard', 'Gaming Monitor', 'USB Hub', 'Laptop Stand',

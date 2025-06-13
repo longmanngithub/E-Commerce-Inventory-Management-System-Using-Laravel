@@ -17,16 +17,19 @@ class PlanSubscriptionSeeder extends Seeder
             [
                 'subscription_tier' => 'Basic',
                 'subscription_price' => 49.00,
+                'product_limit' => 500, // Limit for Basic plan
                 'monthly' => 1
             ],
             [
                 'subscription_tier' => 'Pro',
                 'subscription_price' => 99.00,
+                'product_limit' => 2500, // Limit for Pro plan
                 'monthly' => 1
             ],
             [
                 'subscription_tier' => 'Ultimate',
                 'subscription_price' => 129.00,
+                'product_limit' => null, // NULL represents unlimited
                 'monthly' => 1
             ],
         ];
