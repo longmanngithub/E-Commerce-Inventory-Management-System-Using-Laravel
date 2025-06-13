@@ -85,232 +85,254 @@
                             </button>
                         </div>
 
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3">
-                                    <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($products as $product)
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
                                 <tr>
-                                    {{-- Checkbox --}}
-                                    <td class="px-6 py-4">
-                                        <input type="checkbox" name="product_ids[]" value="{{ $product->product_id }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm">
-                                    </td>
+                                    <th class="px-6 py-3">
+                                        <input type="checkbox" id="select-all-checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($products as $product)
+                                    <tr>
+                                        {{-- Checkbox --}}
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" name="product_ids[]" value="{{ $product->product_id }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm">
+                                        </td>
 
-                                    {{-- Display Product Image --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($product->product_image)
-                                            <div class="h-16 w-16">
-                                                <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
-                                            </div>
-                                        @else
-                                            <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
-                                                <span class="text-xs text-gray-500">No img</span>
-                                            </div>
-                                        @endif
-                                    </td>
+                                        {{-- Display Product Image --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($product->product_image)
+                                                <div class="h-16 w-16">
+                                                    <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
+                                                </div>
+                                            @else
+                                                <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
+                                                    <span class="text-xs text-gray-500">No img</span>
+                                                </div>
+                                            @endif
+                                        </td>
 
-                                    {{-- Product name --}}
-                                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
+                                        {{-- Product name --}}
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
 
-                                    {{-- Product SKU --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
+                                        {{-- Product SKU --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
 
-                                    {{-- Display Category Name --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{-- We use optional() in case a product somehow has no category --}}
-                                        {{ optional($product->category)->category_name }}
-                                    </td>
+                                        {{-- Display Category Name --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{-- We use optional() in case a product somehow has no category --}}
+                                            {{ optional($product->category)->category_name }}
+                                        </td>
 
-                                    {{-- Product price --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
+                                        {{-- Product price --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
 
-                                    {{-- Display Stock Quantity --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{-- Display Stock Quantity --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 
-                                        {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
-                                        {{ $product->stocks->sum('stock_quantity') }}
+                                            {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
+                                            {{ $product->stocks->sum('stock_quantity') }}
 
-                                    </td>
+                                        </td>
 
-                                    {{-- Availability status --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            // Set the color based on the status
-                                            $statusColor = match($product->stock_status) {
-                                                'In Stock' => 'bg-green-100 text-green-800',
-                                                'Low Stock' => 'bg-yellow-100 text-yellow-800',
-                                                'Out of Stock' => 'bg-red-100 text-red-800',
-                                                default => 'bg-gray-100 text-gray-800',
-                                            };
-                                        @endphp
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
+                                        {{-- Status Cell --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="{{ route('products.toggleStatus', $product->product_id) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
+                                                {{ $product->status }}
+                                            </a>
+                                        </td>
+
+                                        {{-- Availability status --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @php
+                                                // Set the color based on the status
+                                                $statusColor = match($product->stock_status) {
+                                                    'In Stock' => 'bg-green-100 text-green-800',
+                                                    'Low Stock' => 'bg-yellow-100 text-yellow-800',
+                                                    'Out of Stock' => 'bg-red-100 text-red-800',
+                                                    default => 'bg-gray-100 text-gray-800',
+                                                };
+                                            @endphp
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
                                         {{ $product->stock_status }}
                                     </span>
-                                    </td>
+                                        </td>
 
-                                    {{-- Actions --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        {{-- Actions --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 
-                                        {{-- NEW: A Flexbox container to align all items --}}
-                                        <div class="flex items-center space-x-4">
+                                            {{-- NEW: A Flexbox container to align all items --}}
+                                            <div class="flex items-center space-x-4">
 
-                                            {{-- The "View" link is available to everyone --}}
-                                            <a href="{{ route('products.history', ['productName' => $product->product_name]) }}" class="text-blue-600 hover:text-blue-900">
-                                                View
-                                            </a>
-
-                                            {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
-                                            @can('update-product', $product)
-                                                <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
-                                                    Edit
+                                                {{-- The "View" link is available to everyone --}}
+                                                <a href="{{ route('products.show', $product->product_id) }}" class="text-blue-600 hover:text-blue-900">
+                                                    View
                                                 </a>
-                                            @endcan
 
-                                            {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
-                                            @can('delete-product', $product)
-                                                <button type="button" class="text-red-600 hover:text-red-900"
-                                                        onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
-                                                    Delete
-                                                </button>
-                                            @endcan
+                                                {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
+                                                @can('update-product', $product)
+                                                    <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                        Edit
+                                                    </a>
+                                                @endcan
 
-                                        </div>
-                                    </td>
-                                    {{-- END OF ACTIONS --}}
+                                                {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
+                                                @can('delete-product', $product)
+                                                    <button type="button" class="text-red-600 hover:text-red-900"
+                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
+                                                        Delete
+                                                    </button>
+                                                @endcan
 
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No products found. Add your first product to get started.</td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
+                                            </div>
+                                        </td>
+                                        {{-- END OF ACTIONS --}}
+
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No products found. Add your first product to get started.</td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+
+                        </div>
+
                     </form>
                     {{-- END OF WRAPPING FORM --}}
 
                     @else
-                        {{-- If the user CANNOT bulk delete, show the table WITHOUT the form or checkboxes --}}
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($products as $product)
+                        <div class="overflow-x-auto">
+                            {{-- If the user CANNOT bulk delete, show the table WITHOUT the form or checkboxes --}}
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($products as $product)
+                                    <tr>
 
-                                    {{-- Display Product Image --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($product->product_image)
-                                            <div class="h-16 w-16">
-                                                <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
-                                            </div>
-                                        @else
-                                            <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
-                                                <span class="text-xs text-gray-500">No img</span>
-                                            </div>
-                                        @endif
-                                    </td>
+                                        {{-- Display Product Image --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($product->product_image)
+                                                <div class="h-16 w-16">
+                                                    <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
+                                                </div>
+                                            @else
+                                                <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
+                                                    <span class="text-xs text-gray-500">No img</span>
+                                                </div>
+                                            @endif
+                                        </td>
 
-                                    {{-- Product name --}}
-                                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
+                                        {{-- Product name --}}
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
 
-                                    {{-- Product SKU --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
+                                        {{-- Product SKU --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
 
-                                    {{-- Display Category Name --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{-- We use optional() in case a product somehow has no category --}}
-                                        {{ optional($product->category)->category_name }}
-                                    </td>
+                                        {{-- Display Category Name --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{-- We use optional() in case a product somehow has no category --}}
+                                            {{ optional($product->category)->category_name }}
+                                        </td>
 
-                                    {{-- Product price --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
+                                        {{-- Product price --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
 
-                                    {{-- Display Stock Quantity --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{-- Display Stock Quantity --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 
-                                        {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
-                                        {{ $product->stocks->sum('stock_quantity') }}
+                                            {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
+                                            {{ $product->stocks->sum('stock_quantity') }}
 
-                                    </td>
+                                        </td>
 
-                                    {{-- Availability status --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            // Set the color based on the status
-                                            $statusColor = match($product->stock_status) {
-                                                'In Stock' => 'bg-green-100 text-green-800',
-                                                'Low Stock' => 'bg-yellow-100 text-yellow-800',
-                                                'Out of Stock' => 'bg-red-100 text-red-800',
-                                                default => 'bg-gray-100 text-gray-800',
-                                            };
-                                        @endphp
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
+                                        {{-- Status Cell --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="{{ route('products.toggleStatus', $product->product_id) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
+                                                {{ $product->status }}
+                                            </a>
+                                        </td>
+
+                                        {{-- Availability status --}}
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @php
+                                                // Set the color based on the status
+                                                $statusColor = match($product->stock_status) {
+                                                    'In Stock' => 'bg-green-100 text-green-800',
+                                                    'Low Stock' => 'bg-yellow-100 text-yellow-800',
+                                                    'Out of Stock' => 'bg-red-100 text-red-800',
+                                                    default => 'bg-gray-100 text-gray-800',
+                                                };
+                                            @endphp
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
                                         {{ $product->stock_status }}
                                     </span>
-                                    </td>
+                                        </td>
 
-                                    {{-- Actions --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        {{-- Actions --}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 
-                                        {{-- NEW: A Flexbox container to align all items --}}
-                                        <div class="flex items-center space-x-4">
+                                            {{-- NEW: A Flexbox container to align all items --}}
+                                            <div class="flex items-center space-x-4">
 
-                                            {{-- The "View" link is available to everyone --}}
-                                            <a href="{{ route('products.history', ['productName' => $product->product_name]) }}" class="text-blue-600 hover:text-blue-900">
-                                                View
-                                            </a>
-
-                                            {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
-                                            @can('update-product', $product)
-                                                <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
-                                                    Edit
+                                                {{-- The "View" link is available to everyone --}}
+                                                <a href="{{ route('products.show', $product->product_id) }}" class="text-blue-600 hover:text-blue-900">
+                                                    View
                                                 </a>
-                                            @endcan
 
-                                            {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
-                                            @can('delete-product', $product)
-                                                <button type="button" class="text-red-600 hover:text-red-900"
-                                                        onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
-                                                    Delete
-                                                </button>
-                                            @endcan
+                                                {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
+                                                @can('update-product', $product)
+                                                    <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                        Edit
+                                                    </a>
+                                                @endcan
 
-                                        </div>
-                                    </td>
-                                    {{-- END OF ACTIONS --}}
+                                                {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
+                                                @can('delete-product', $product)
+                                                    <button type="button" class="text-red-600 hover:text-red-900"
+                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
+                                                        Delete
+                                                    </button>
+                                                @endcan
 
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No products found. Add your first product to get started.</td>
-                                </tr>
-                            @endforelse
-                            </tbody>
-                        </table>
+                                            </div>
+                                        </td>
+                                        {{-- END OF ACTIONS --}}
+
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No products found. Add your first product to get started.</td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     @endcan
 
 

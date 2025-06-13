@@ -108,7 +108,7 @@
                             {{-- Product desc --}}
                             <div class="md:col-span-2">
                                 <x-input-label for="product_desc" :value="__('Description')" />
-                                <textarea id="product_desc" name="product_desc" required class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('product_desc', $product->product_desc) }}</textarea>
+                                <textarea id="product_desc" name="product_desc" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('product_desc', $product->product_desc) }}</textarea>
                                 <x-input-error :messages="$errors->get('product_desc')" class="mt-2" />
                             </div>
 

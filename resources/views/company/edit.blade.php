@@ -58,7 +58,7 @@
                         {{-- Company Name --}}
                         <div>
                             <x-input-label for="company_name" :value="__('Company Name')" />
-                            <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full" :value="old('company_name', $company->company_name)" required autofocus />
+                            <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full" :value="old('company_name', $company->company_name)" readonly />
                             <x-input-error class="mt-2" :messages="$errors->get('company_name')" />
                         </div>
 
