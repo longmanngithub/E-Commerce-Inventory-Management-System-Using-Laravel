@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Stock;
@@ -209,19 +210,50 @@ class ProductController extends Controller
     /**
      * Display the specified product and its purchase history.
      */
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
-        // First, we ensure the user is allowed to see this product.
-        if ($product->company_id !== auth()->user()->company_id) {
-            abort(403);
+        // 1. Authorize that the user is allowed to see this product.
+        $this->authorize('update-product', $product);
+
+        // 2. Eager load relationships for the primary product (for the Overview tab).
+        $product->load('category', 'stocks');
+
+        // 3. Calculate stats for the "Overview" tab using the primary product.
+        $currentStock = $product->stocks->sum('stock_quantity');
+        $reorderPoint = $product->reorder_point;
+        $monthlySales = OrderItem::where('product_id', $product->product_id)
+            ->whereHas('order', function ($query) {
+                $query->where('order_status', 'Paid')->where('order_date', '>=', now()->subDays(30));
+            })
+            ->sum('order_item_quantity');
+
+        // 4. --- NEW LOGIC for "Purchases" Tab ---
+        // Get all product IDs that share the same name for this company.
+        $allProductIdsWithName = Product::where('company_id', $product->company_id)
+            ->where('product_name', $product->product_name)
+            ->pluck('product_id');
+
+        // Start a query for all stock records related to any of those IDs.
+        $purchasesQuery = Stock::whereIn('product_id', $allProductIdsWithName);
+
+        // Apply sorting from the request.
+        if ($request->input('sort_by') === 'oldest') {
+            $purchasesQuery->orderBy('stock_purchase_date', 'asc');
+        } else {
+            $purchasesQuery->orderBy('stock_purchase_date', 'desc'); // Default to newest
         }
 
-        // Load the purchase history for this product using the 'stocks' relationship.
-        // Make sure the 'stocks' relationship exists in your Product model.
-        $purchases = $product->stocks()->latest('stock_purchase_date')->get();
+        // Paginate the final results and keep the sort order in the pagination links.
+        $purchases = $purchasesQuery->paginate(10)->withQueryString();
 
-        // This line sends the specific $product and its $purchases to the view.
-        return view('products.show', compact('product', 'purchases'));
+        // 5. Pass all data to the single view.
+        return view('products.show', compact(
+            'product',
+            'currentStock',
+            'reorderPoint',
+            'monthlySales',
+            'purchases'
+        ));
     }
 
     /**
@@ -255,5 +287,50 @@ class ProductController extends Controller
         Product::whereIn('product_id', $productIds)->delete();
 
         return redirect()->route('products.index')->with('status', 'Selected products have been deleted successfully!');
+    }
+
+    /**
+     * Set status for each product
+     *
+     * @param Request $request
+     * @param Product $product
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function toggleStatus(Request $request, Product $product)
+    {
+        // Authorize that the user can update this product
+        $this->authorize('update-product', $product);
+
+        $company = Auth::user()->company;
+        $newStatus = $product->status === 'Active' ? 'Inactive' : 'Active';
+
+        // --- THE CRITICAL LIMIT CHECK ---
+        // If the user is trying to ACTIVATE a product, check their limit
+        if ($newStatus === 'Active') {
+            // First, check if the company has a subscription at all
+            if (!$company->subscription || !$company->subscription->plan) {
+                return redirect()->route('admin.products.index')->with('error', 'You must have an active subscription to activate products.');
+            }
+
+            // Get the limit from the subscription plan
+            $planLimit = $company->subscription->plan->product_limit;
+
+            // A null limit means unlimited products are allowed
+            if ($planLimit !== null) {
+                $activeProductCount = Product::where('company_id', $company->company_id)->where('status', 'Active')->count();
+
+                if ($activeProductCount >= $planLimit) {
+                    // If they are at or over their limit, return an error
+                    return redirect()->route('admin.products.index')->with('error', "You have reached your plan's limit of {$planLimit} active products. Please upgrade your plan or deactivate other products.");
+                }
+            }
+        }
+
+        // If the check passes, update the status
+        $product->status = $newStatus;
+        $product->save();
+
+        return redirect()->route('products.index')->with('status', 'Product status updated successfully!');
     }
 }
