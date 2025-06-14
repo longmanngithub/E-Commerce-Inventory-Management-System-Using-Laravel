@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'api' => [
+        'url' => env('API_URL'),
+        'email' => env('API_OWNER_EMAIL'),
+        'password' => env('API_OWNER_PASSWORD'),
+    ],
+
 ];
