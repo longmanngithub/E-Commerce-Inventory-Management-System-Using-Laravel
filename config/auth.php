@@ -41,12 +41,6 @@ return [
             'provider' => 'users',
         ],
 
-        // Guard for Platform Owner
-        'platform_owner' => [
-            'driver' => 'session',
-            'provider' => 'platform_owners',
-        ],
-
         // Guard for Company Admin
         'company_admin' => [
             'driver' => 'session',
@@ -58,6 +52,7 @@ return [
             'driver' => 'session',
             'provider' => 'company_staffs',
         ],
+
     ],
 
     /*
@@ -88,12 +83,6 @@ return [
         //     'table' => 'users',
         // ],
 
-        // Provider for Platform Owners
-        'platform_owners' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\PlatformOwner::class,
-        ],
-
         // Provider for Company Admins
         'company_admins' => [
             'driver' => 'eloquent',
@@ -105,6 +94,7 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\CompanyStaff::class,
         ],
+
     ],
 
     /*
@@ -148,12 +138,6 @@ return [
             'throttle' => 60,
         ],
 
-        'platform_owners' => [
-            'provider' => 'platform_owners',
-            'table' => 'password_reset_tokens',
-            'expire' => 60,
-            'throttle' => 60,
-        ],
     ],
 
     /*
