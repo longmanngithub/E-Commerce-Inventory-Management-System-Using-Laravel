@@ -23,8 +23,9 @@ Route::middleware('guest:company_admin,company_staff')->group(function () {
 
     // --- REGISTRATION (Multi-Step) ---
     Route::get('register', [CompanyAdminRegisterController::class, 'showRegistrationForm'])->name('register');
-    Route::post('register', [CompanyAdminRegisterController::class, 'showCompanyForm'])->name('register.attempt');
-    Route::post('register/company', [CompanyAdminRegisterController::class, 'storeRegistration'])->name('register.company.store');
+    Route::post('register', [CompanyAdminRegisterController::class, 'register'])->name('register.attempt');
+    Route::get('register/company', [CompanyAdminRegisterController::class, 'showCompanyForm'])->name('register.company.show');
+    Route::post('register/company', [CompanyAdminRegisterController::class, 'storeCompany'])->name('register.company.store');
 
     // --- FORGOT PASSWORD (Multi-Step) ---
     Route::get('forgot-password', [CompanyAdminPasswordResetController::class, 'showLinkRequestForm'])->name('password.request');

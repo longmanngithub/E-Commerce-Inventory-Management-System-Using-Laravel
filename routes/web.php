@@ -28,43 +28,14 @@ Route::get('/', function () {
 Route::get('/invitation/accept/{token}', [InvitationController::class, 'accept'])->name('invitation.accept');
 Route::post('/invitation/set-password', [InvitationController::class, 'storePassword'])->name('invitation.store_password');
 
-// --- PLATFORM OWNER ROUTES ---
-Route::prefix('owner')->name('owner.')->group(function(){
-    // Login
-    Route::get('/login', [PlatformOwnerLoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [PlatformOwnerLoginController::class, 'login'])->name('login.attempt');
-
-    // Forgot Password
-    Route::get('/forgot-password', [PlatformOwnerPasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
-    Route::post('/forgot-password', [PlatformOwnerPasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
-    Route::get('/reset-password/{token}', [PlatformOwnerPasswordResetController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [PlatformOwnerPasswordResetController::class, 'reset'])->name('password.update');
-
-    // Protected Dashboard
-    Route::middleware('auth:platform_owner')->group(function () {
-
-        // Logout
-        Route::post('/logout', [PlatformOwnerLoginController::class, 'logout'])->name('logout');
-
-        // Dashboard view
-        Route::get('/dashboard', fn() => 'Welcome Platform Owner!')->name('dashboard');
-
-        // Profile settings
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    });
-});
-
 
 // --- COMPANY USER PROTECTED ROUTES ---
 Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])->group(function () {
 
-    // Dashboard view
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     Route::middleware('subscribed')->group(function() {
+
+        // Dashboard view
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // Profile settings
         Route::get('/profile', [ProfileController::class, 'edit'])->name('admin.profile.edit');
@@ -86,7 +57,7 @@ Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])-
         Route::get('/analytics-report/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
     });
 
-    // Subscription view
+    // Subscription view (user is logged in but might not be subscribed)
     Route::get('/subscription/plans', [SubscriptionController::class, 'index'])->name('subscription.plans');
     Route::get('/subscription/checkout/{plan}', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
     Route::post('/subscription/store', [SubscriptionController::class, 'storeSubscription'])->name('subscription.store');
