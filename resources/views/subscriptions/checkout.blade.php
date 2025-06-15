@@ -5,7 +5,7 @@
 
             <form class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16 mt-12" action="{{ route('subscription.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="plan_id" value="{{ $plan->subscription_id }}">
+                <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
 
                 {{-- Left Side: Payment Form --}}
                 <div>
@@ -90,9 +90,9 @@
                             <h2 class="text-lg font-medium text-gray-900">Order summary</h2>
                             <div class="mt-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                                 <div class="p-6">
-                                    <h3 class="text-xl font-semibold text-gray-900">{{ $plan->subscription_tier }} Plan</h3>
+                                    <h3 class="text-xl font-semibold text-gray-900">{{ $plan['tier'] }} Plan</h3>
                                     <p class="mt-4 flex items-baseline text-gray-900">
-                                        <span class="text-4xl font-extrabold tracking-tight">${{ number_format($plan->subscription_price, 2) }}</span>
+                                        <span class="text-4xl font-extrabold tracking-tight">${{ number_format($plan['price'], 2) }}</span>
                                         <span class="ml-1 text-lg font-semibold">/month</span>
                                     </p>
 
@@ -105,7 +105,7 @@
                                 </div>
                                 <div class="border-t border-gray-200 p-6 flex items-center justify-between">
                                     <dt class="text-base font-medium text-gray-900">Total</dt>
-                                    <dd class="text-base font-medium text-gray-900">${{ number_format($plan->subscription_price, 2) }}</dd>
+                                    <dd class="text-base font-medium text-gray-900">${{ number_format($plan['price'], 2) }}</dd>
                                 </div>
                             </div>
                             <div class="mt-6">

@@ -15,33 +15,33 @@
                 @foreach ($plans as $plan)
                     {{-- We determine the styling based on the plan name --}}
                     @php
-                        $isPopular = ($plan->subscription_tier === 'Pro');
+                        $isPopular = ($plan['tier'] === 'Pro');
                     @endphp
                     <div class="relative p-8 bg-white border rounded-2xl shadow-sm flex flex-col {{ $isPopular ? 'border-indigo-600' : 'border-gray-200' }}">
                         @if($isPopular)
                             <div class="absolute top-0 -translate-y-1/2 transform px-3 py-1 text-sm font-semibold tracking-wide text-white bg-indigo-600 rounded-full shadow-md">Most Popular</div>
                         @endif
 
-                        <h3 class="text-2xl font-semibold text-gray-900">{{ $plan->subscription_tier }}</h3>
+                        <h3 class="text-2xl font-semibold text-gray-900">{{ $plan['tier'] }}</h3>
                         <p class="mt-4 flex items-baseline text-gray-900">
-                            <span class="text-5xl font-extrabold tracking-tight">${{ number_format($plan->subscription_price, 0) }}</span>
+                            <span class="text-5xl font-extrabold tracking-tight">${{ number_format($plan['price'], 0) }}</span>
                             <span class="ml-1 text-xl font-semibold">/month</span>
                         </p>
 
                         {{-- This is a simplified list of features from your design --}}
                         <ul role="list" class="mt-6 space-y-4 flex-1">
                             <li class="flex space-x-3"><span class="text-green-500">&#10003;</span><span>
-                                @if($plan->subscription_tier === 'Basic') Up to 500 active products
-                                    @elseif($plan->subscription_tier === 'Pro') Up to 2500 active products
+                                @if($plan['tier'] === 'Basic') Up to 500 active products
+                                    @elseif($plan['tier'] === 'Pro') Up to 2500 active products
                                     @else Unlimited products @endif
                             </span></li>
                             <li class="flex space-x-3"><span class="text-green-500">&#10003;</span><span>
-                                @if($plan->subscription_tier === 'Basic') Single user account
-                                    @elseif($plan->subscription_tier === 'Pro') Up to 10 user accounts
+                                @if($plan['tier'] === 'Basic') Single user account
+                                    @elseif($plan['tier'] === 'Pro') Up to 10 user accounts
                                     @else Unlimited user accounts @endif
                             </span></li>
                             <li class="flex space-x-3"><span class="text-green-500">&#10003;</span><span>
-                                @if($plan->subscription_tier === 'Pro' || $plan->subscription_tier === 'Ultimate') Advanced features @else Basic features @endif
+                                @if($plan['tier'] === 'Pro' || $plan['tier'] === 'Ultimate') Advanced features @else Basic features @endif
                             </span></li>
                         </ul>
 
@@ -50,15 +50,15 @@
                                 {{-- For EXISTING users, show a form to instantly change their plan --}}
                                 <form action="{{ route('subscription.change') }}" method="POST" class="mt-8">
                                     @csrf
-                                    <input type="hidden" name="plan_id" value="{{ $plan->subscription_id }}">
+                                    <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
                                     <button type="submit" class="block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium {{ $isPopular ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' }}">
-                                        Change to {{ $plan->subscription_tier }}
+                                        Change to {{ $plan['tier'] }}
                                     </button>
                                 </form>
                             @else
                                 {{-- For NEW users, show a link to the checkout page --}}
-                                <a href="{{ route('subscription.checkout', $plan->subscription_id) }}" class="mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium {{ $isPopular ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' }}">
-                                    Choose {{ $plan->subscription_tier }}
+                                <a href="{{ route('subscription.checkout', $plan['id']) }}" class="mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium {{ $isPopular ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' }}">
+                                    Choose {{ $plan['tier'] }}
                                 </a>
                             @endif
 

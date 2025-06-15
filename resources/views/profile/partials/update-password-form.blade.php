@@ -8,7 +8,7 @@
         </p>
     </header>
 
-    <form method="post" action="{{ Auth::guard('platform_owner')->check() ? route('platform_owner.password.update') : route('admin.password.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('admin.password.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('put')
 

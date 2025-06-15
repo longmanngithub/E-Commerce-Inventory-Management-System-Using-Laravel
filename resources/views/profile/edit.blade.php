@@ -22,7 +22,7 @@
             </div>
 
             {{-- Payment Method section, only shown for the Company Owner --}}
-            @if(Auth::user()->is_owner)
+            @if(isset($user['is_owner']) && $user['is_owner'])
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <div class="max-w-xl">
                         <section>
@@ -39,7 +39,7 @@
                                 <div class="p-4 border rounded-md flex items-center justify-between">
                                     <div class="flex items-center">
                                         {{-- Placeholder for a card logo --}}
-                                        <svg class="h-8 w-auto" ...> ... </svg>
+                                        <img x-show="cardType === 'visa'" src="{{ asset('assets/images/visa.svg') }}" alt="Visa" class="h-8 w-auto">
                                         <div class="ms-4">
                                             <div class="text-sm font-medium">Visa ending in 1234</div>
                                             <div class="text-sm text-gray-500">Expiry 12 / 25</div>
@@ -55,7 +55,7 @@
             @endif
 
             {{-- Delete Account "Danger Zone" --}}
-            @if(!$user->is_owner)
+            @if(!isset($user['is_owner']) || !$user['is_owner'])
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     <section class="space-y-6">
@@ -78,7 +78,7 @@
 
             {{-- This is the confirmation modal that will pop up --}}
             <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-                <form method="post" action="{{ Auth::guard('platform_owner')->check() ? route('platform_owner.profile.destroy') : route('admin.profile.destroy') }}" class="p-6">
+                <form method="post" action="{{ route('admin.profile.destroy') }}" class="p-6">
                     @csrf
                     @method('delete')
 

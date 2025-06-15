@@ -8,21 +8,21 @@
         </p>
     </header>
 
-    <form method="post" action="{{ Auth::guard('platform_owner')->check() ? route('platform_owner.profile.update') : route('admin.profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('admin.profile.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
         {{-- Name --}}
         <div>
             <x-input-label for="name" :value="__('Full Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->admin_name ?? $user->staff_name ?? $user->owner_name)" required autofocus />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user['admin_name'] ?? $user['staff_name'])" required autofocus />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         {{-- Email --}}
         <div>
             <x-input-label for="email" :value="__('Email Address')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->admin_email ?? $user->staff_email ?? $user->owner_email)" required />
+            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user['admin_email'] ?? $user['staff_email'])" required />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
         </div>
 
@@ -31,14 +31,14 @@
             <x-input-label for="role" :value="__('Role')" />
 
             @php
-                // Determine the role name based on the user's type
-                $roleName = 'Staff'; // Default to Staff
-                if ($user instanceof \App\Models\CompanyAdmin && $user->is_owner) {
+                // Check for array keys instead of object type
+                $roleName = 'Unknown'; // A safe default
+                if (isset($user['is_owner']) && $user['is_owner']) {
                     $roleName = 'Company Owner';
-                } elseif ($user instanceof \App\Models\CompanyAdmin) {
+                } elseif (isset($user['admin_name'])) {
                     $roleName = 'Admin';
-                } elseif ($user instanceof \App\Models\PlatformOwner) {
-                    $roleName = 'Platform Owner';
+                } elseif (isset($user['staff_name'])) {
+                    $roleName = 'Staff';
                 }
             @endphp
 
