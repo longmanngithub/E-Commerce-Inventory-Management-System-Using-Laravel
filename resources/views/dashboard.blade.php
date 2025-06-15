@@ -7,86 +7,57 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="space-y-6">
-                {{-- Overview Cards --}}
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-sm font-medium text-gray-500">Total Products</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalProducts }}</p>
+            {{-- Check if dashboard data exists before trying to display it --}}
+            @if(!empty($dashboardData))
+                <div class="space-y-6">
+                    {{-- Overview Cards --}}
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm"><h3 class="text-sm font-medium text-gray-500">Total Products</h3><p class="mt-1 text-3xl font-semibold">{{ $dashboardData['overview']['totalProducts'] }}</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm"><h3 class="text-sm font-medium text-gray-500">In Stock</h3><p class="mt-1 text-3xl font-semibold">{{ $dashboardData['overview']['inStock'] }}</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm"><h3 class="text-sm font-medium text-gray-500">Low Stock</h3><p class="mt-1 text-3xl font-semibold">{{ $dashboardData['overview']['lowStock'] }}</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm"><h3 class="text-sm font-medium text-gray-500">Out of Stock</h3><p class="mt-1 text-3xl font-semibold">{{ $dashboardData['overview']['outOfStock'] }}</p></div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-sm font-medium text-gray-500">In Stock</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $inStock }}</p>
+
+                    {{-- Charts Section --}}
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-medium text-gray-900">Inventory Value Trend</h3>
+                            <div class="mt-4" style="height: 250px;"><canvas id="inventoryValueChart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-medium text-gray-900">Order Status</h3>
+                            <div class="mt-4" style="height: 250px;"><canvas id="orderStatusChart"></canvas></div>
+                        </div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-sm font-medium text-gray-500">Low Stock</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $lowStock }}</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-sm font-medium text-gray-500">Out of Stock</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ $outOfStock }}</p>
+
+                    {{-- Recent Inventory Activity Table --}}
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 text-gray-900">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Inventory Activity</h3>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 ...">Product</th><th class="px-6 py-3 ...">Update</th><th class="px-6 py-3 ...">User</th></tr></thead>
+                                <tbody>
+                                @forelse($dashboardData['recentActivity'] as $log)
+                                    <tr>
+                                        <td class="px-6 py-4">{{ $log['subject_name'] ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">{{ $log['details'] }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">{{ $log['user_name'] }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No recent activity.</td></tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
-                {{-- Charts Section --}}
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Inventory Value Trend</h3>
-                        <div class="mt-4"><canvas id="inventoryValueChart"></canvas></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Order Status</h3>
-                        <div class="mt-4"><canvas id="orderStatusChart"></canvas></div>
-                    </div>
-                </div>
-
-                {{-- Recent Inventory Activity Table --}}
+            @else
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Inventory Activity</h3>
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left ...">Product</th>
-                                <th class="px-6 py-3 text-left ...">SKU</th>
-                                <th class="px-6 py-3 text-left ...">Update</th>
-                                <th class="px-6 py-3 text-left ...">Stock</th>
-                                <th class="px-6 py-3 text-left ...">Status</th>
-                            </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($recentActivity as $log)
-                                {{-- Ensure the log subject is a Product before trying to display it --}}
-                                @if($log->subject instanceof \App\Models\Product)
-                                    @php $product = $log->subject; @endphp
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $product->product_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{{ $log->details }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->stocks->sum('stock_quantity') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @php
-                                                $statusColor = match($product->stock_status) {
-                                                    'In Stock' => 'bg-green-100 text-green-800',
-                                                    'Low Stock' => 'bg-yellow-100 text-yellow-800',
-                                                    'Out of Stock' => 'bg-red-100 text-red-800',
-                                                    default => 'bg-gray-100 text-gray-800',
-                                                };
-                                            @endphp
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                                {{ $product->stock_status }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @empty
-                                <tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No recent activity.</td></tr>
-                            @endforelse
-                            </tbody>
-                        </table>
+                        Could not load dashboard data at this time.
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 
@@ -94,59 +65,86 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-
-                {{-- Inventory Value Trend (Bar Chart) --}}
+                @if(!empty($dashboardData))
+                // Chart for Inventory Value Trend
                 const inventoryCtx = document.getElementById('inventoryValueChart');
-                new Chart(inventoryCtx, {
-                    type: 'bar', // Bar chart
-                    data: {
-                        labels: {!! json_encode($chartLabels) !!},
-                        datasets: [
-                            {
-                                label: 'Stock in',
-                                data: {!! json_encode($stockInData) !!},
-                                backgroundColor: 'rgba(59, 130, 246, 1)', // Blue
-                                borderColor: 'rgba(59, 130, 246, 1)',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'Stock out',
-                                data: {!! json_encode($stockOutData) !!},
-                                backgroundColor: 'rgba(34, 197, 94, 1)', // Green
-                                borderColor: 'rgba(34, 197, 94, 1)',
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: { beginAtZero: true },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
+                if(inventoryCtx) {
+                    new Chart(inventoryCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: {!! json_encode($dashboardData['inventoryValue']['labels']) !!},
+                            datasets: [
+                                { label: 'Stock in Value', data: {!! json_encode($dashboardData['inventoryValue']['stockIn']) !!}, backgroundColor: 'rgba(59, 130, 246, 1)' },
+                                { label: 'Stock out Value', data: {!! json_encode($dashboardData['inventoryValue']['stockOut']) !!}, backgroundColor: 'rgba(34, 197, 94, 1)' }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { beginAtZero: true },
+                                      x: { grid: { display: false } } } }
+                    });
+                }
 
-                {{-- Order Status (Doughnut Chart) --}}
+                // Chart for Order Status
                 const orderStatusCtx = document.getElementById('orderStatusChart');
-                if (orderStatusCtx) {
+                if(orderStatusCtx) {
+                    // This is the data for the chart slices
+                    const orderStatusData = {!! json_encode($dashboardData['orderStatus']['counts']) !!};
+                    // This is the total number we will display in the middle
+                    const totalOrders = {{ $dashboardData['orderStatus']['total'] ?? 0 }};
+
+                    // This custom plugin draws text in the middle of the doughnut
+                    const centerTextPlugin = {
+                        id: 'centerText',
+                        afterDraw: (chart) => {
+                            if (chart.config.type === 'doughnut') {
+                                let ctx = chart.ctx;
+                                ctx.save();
+                                let centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+                                let centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.font = '24px Figtree, sans-serif';
+                                ctx.fillStyle = '#111827';
+                                ctx.fillText(totalOrders, centerX, centerY - 8);
+
+                                ctx.font = '12px Figtree, sans-serif';
+                                ctx.fillStyle = '#6B7280';
+                                ctx.fillText('Total Orders', centerX, centerY + 12);
+                                ctx.restore();
+                            }
+                        }
+                    };
+
                     new Chart(orderStatusCtx, {
                         type: 'doughnut',
                         data: {
                             labels: ['Paid', 'Canceled'],
                             datasets: [{
-                                label: 'Order Status',
-                                data: [
-                                    {{ $orderStatusCounts['Paid'] ?? 0 }},
-                                    {{ $orderStatusCounts['Canceled'] ?? 0 }}
-                                ],
+                                data: [orderStatusData['Paid'] ?? 0, orderStatusData['Canceled'] ?? 0],
                                 backgroundColor: ['rgba(34, 197, 94, 1)', 'rgba(239, 68, 68, 1)'],
-                                hoverOffset: 4
+                                borderWidth: 0,
+                                hoverOffset: 4,
                             }]
                         },
-                        options: { responsive: true, maintainAspectRatio: false }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '80%', // Make the hole bigger for the text
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'bottom',
+                                },
+                                tooltip: {enabled: true}
+                            }
+                        },
+                        plugins: [centerTextPlugin] // Register our custom plugin
                     });
                 }
+                @endif
             });
         </script>
     @endpush
