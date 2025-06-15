@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -15,75 +16,65 @@ use Illuminate\Validation\Rules\Password;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile form by fetching data from the API.
      */
     public function edit(Request $request): View
     {
-        // Auth::user() automatically gets the currently authenticated user,
-        // regardless of which guard they used (owner, admin, or staff).
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
-    }
+        $token = $request->session()->get('api_token');
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->get(config('services.api.url').'/user');
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(Request $request): RedirectResponse
-    {
-        $user = $request->user();
-
-        // Dynamically determine the correct table and email column for validation
-        $emailColumn = 'email'; // default
-        if ($user instanceof \App\Models\CompanyAdmin) { $emailColumn = 'admin_email'; }
-        if ($user instanceof \App\Models\CompanyStaff) { $emailColumn = 'staff_email'; }
-        if ($user instanceof \App\Models\PlatformOwner) { $emailColumn = 'owner_email'; }
-
-        // Validate the incoming data
-        $validatedData = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique($user->getTable(), $emailColumn)->ignore($user->id, $user->getKeyName())],
-        ]);
-
-        // Dynamically determine the correct name and email fields to update
-        if ($user instanceof \App\Models\CompanyAdmin) {
-            $user->admin_name = $validatedData['name'];
-            $user->admin_email = $validatedData['email'];
-        } elseif ($user instanceof \App\Models\CompanyStaff) {
-            $user->staff_name = $validatedData['name'];
-            $user->staff_email = $validatedData['email'];
-        } elseif ($user instanceof \App\Models\PlatformOwner) {
-            $user->owner_name = $validatedData['name'];
-            $user->owner_email = $validatedData['email'];
+        if ($response->failed()) {
+            // Handle error if API cannot be reached or token is invalid
+            abort(500, 'Could not fetch user profile from API.');
         }
 
-        $user->save();
-
-        return redirect()->route(Auth::guard('owner')->check() ? 'owner.profile.edit' : 'admin.profile.edit')->with('status', 'profile-updated');
+        return view('profile.edit', [
+            'user' => $response->json(), // Pass the user data array from the API to the view
+        ]);
     }
 
     /**
-     * Update the user's password.
+     * Update the user's profile information by calling the API.
      */
-    public function updatePassword(Request $request): RedirectResponse
+    public function update(Request $request)
     {
-        // Get the currently authenticated user
-        $user = $request->user();
-        // Determine the correct password column name
-        $passwordColumn = 'password'; // default, will be overridden
-        if ($user instanceof \App\Models\CompanyAdmin) { $passwordColumn = 'admin_password'; }
-        if ($user instanceof \App\Models\CompanyStaff) { $passwordColumn = 'staff_password'; }
-        if ($user instanceof \App\Models\PlatformOwner) { $passwordColumn = 'owner_password'; }
+        $token = $request->session()->get('api_token');
 
-        // Validate the new password
-        $validated = $request->validateWithBag('updatePassword', [
-            'current_password' => ['required', 'string', 'current_password:'. $user->getAuthGuard()],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->post(config('services.api.url').'/user/profile-information', [
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
 
-        // Update the password in the database
-        $user->{$passwordColumn} = Hash::make($validated['password']);
-        $user->save();
+        // If the API returns validation errors, send them back to the form
+        if ($response->status() === 422) {
+            return back()->withErrors($response->json('errors'))->withInput();
+        }
+
+        return Redirect::route('admin.profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's password by calling the API.
+     */
+    public function updatePassword(Request $request)
+    {
+        $token = $request->session()->get('api_token');
+
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->put(config('services.api.url').'/user/password', [
+                'current_password' => $request->current_password,
+                'password' => $request->password,
+                'password_confirmation' => $request->password_confirmation,
+            ]);
+
+        if ($response->failed()) {
+            return back()->withErrors($response->json('errors'), 'updatePassword');
+        }
 
         return back()->with('status', 'password-updated');
     }
@@ -93,37 +84,35 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // 1. Validate the user entered their correct password
+        // Validate that a password was submitted (the API will check if it's correct)
         $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password:'. $request->user()->getAuthGuard()],
+            'password' => ['required', 'string'],
         ]);
 
-        $user = $request->user();
+        // Get the API token from the session
+        $token = $request->session()->get('api_token');
 
-        if ($user->is_owner) {
-            abort(403, 'The primary company owner account cannot be deleted.');
+        // Make an authenticated DELETE request to the API, passing the password
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->delete(config('services.api.url').'/user', [
+                'password' => $request->password,
+            ]);
+
+        // If the API returns a validation error (e.g., wrong password, last admin), show it
+        if ($response->status() === 422) {
+            return back()->withErrors(['password' => $response->json('message')], 'userDeletion');
+        }
+        // Handle other potential API errors
+        if ($response->failed()) {
+            return back()->withErrors(['password' => 'An unexpected error occurred. Please try again.'], 'userDeletion');
         }
 
-        // 2. --- CRITICAL BUSINESS LOGIC ---
-        // Check if the user is a Company Admin
-        if ($user instanceof \App\Models\CompanyAdmin) {
-            // Check if they are the LAST admin in their company
-            $adminCount = \App\Models\CompanyAdmin::where('company_id', $user->company_id)->count();
-
-            if ($adminCount <= 1) {
-                // If they are the last admin, prevent deletion and send an error back
-                return back()->withErrors(['password' => 'You cannot delete the last admin account. Please deactivate the company instead or promote another user to admin.'])->with('error', 'Deletion failed.');
-            }
-        }
-
-        // 3. If checks pass, proceed with deletion
-        Auth::logout(); // Log the user out first
-
-        $user->delete(); // Delete the user record
-
+        // If the API call was successful, log the user out and redirect
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('status', 'Your account has been deleted.');
+        return redirect('/')->with('status', 'Your account has been successfully deleted.');
     }
 }

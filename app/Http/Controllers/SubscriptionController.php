@@ -6,6 +6,7 @@ use App\Models\PlanSubscription;
 use App\Models\SubscriptionOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class SubscriptionController extends Controller
 {
@@ -14,23 +15,46 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        // Fetch all available plans from the database
-        $plans = PlanSubscription::all();
+        // Make the API call to get the list of plans
+        $response = Http::withHeaders(['Accept' => 'application/json'])
+            ->get(config('services.api.url').'/plans');
 
-        // Get the logged-in user's company and check if a subscription already exists.
-        $company = Auth::user()->company;
-        $isChangingPlan = $company && $company->subscription;
+        // First, check if the API call failed for any reason.
+        if ($response->failed()) {
+            // If it failed, send an empty array to the view to prevent the error.
+            // We also send an error message to inform the user.
+            $plans = [];
+            $isChangingPlan = false; // Set a default
+            return view('subscriptions.plans', compact('plans', 'isChangingPlan'))
+                ->with('error', 'Could not load subscription plans at this time. Please try again later.');
+        }
 
-        // Pass both the plans and the new boolean flag to the view
+        // If the call was successful, get the data from the 'data' key.
+        // We default to an empty array just in case the 'data' key is missing.
+        $plans = $response->json('data', []);
+
+        // Determine if the logged-in user is changing their plan or signing up.
+        $isChangingPlan = false;
+        if (Auth::check()) {
+            $company = Auth::user()->company;
+            $isChangingPlan = $company && $company->subscription;
+        }
+
         return view('subscriptions.plans', compact('plans', 'isChangingPlan'));
     }
 
     /**
      * Show the checkout page for a selected plan.
      */
-    public function checkout(PlanSubscription $plan)
+    public function checkout($planId)
     {
         // Pass the selected plan to the checkout view
+        $response = Http::get(config('services.api.url').'/plans');
+        $plans = $response->json('data');
+        $plan = collect($plans)->firstWhere('id', $planId);
+
+        if (!$plan) { abort(404); }
+
         return view('subscriptions.checkout', compact('plan'));
     }
 
@@ -39,40 +63,29 @@ class SubscriptionController extends Controller
      */
     public function storeSubscription(Request $request)
     {
-        $request->merge(['card_number' => preg_replace('/[^0-9]/', '', $request->input('card_number'))]);
+        $token = $request->session()->get('api_token');
 
-        // 1. Validate the plan ID and the new payment fields
-        $request->validate([
-            'plan_id' => 'required|integer|exists:plan_subscription,subscription_id',
-            'card_number' => 'required|string|digits_between:15,16',
-            'expiry_date' => ['required', 'string', 'regex:~^(0[1-9]|1[0-2])\s*/\s*\d{2}$~'],
-            'cvv' => 'required|string|digits:3',
-            'billing_address' => 'required|string|max:255'
-        ]);
+        // The API is now responsible for validation.
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->post(config('services.api.url').'/subscriptions', [
+                'plan_id' => $request->plan_id,
+                'card_number' => $request->card_number,
+                'expiry_date' => $request->expiry_date,
+                'cvv' => $request->cvv,
+                'billing_address' => $request->billing_address,
+            ]);
 
-        // 2. Get the selected plan and the currently authenticated user and their company.
-        $plan = PlanSubscription::findOrFail($request->input('plan_id'));
-        $admin = Auth::user();
-        $company = $admin->company;
+        // If the API returns validation errors, send them back to the form
+        if ($response->status() === 422) {
+            return back()->withErrors($response->json('errors'))->withInput();
+        }
+        if ($response->failed()) {
+            return back()->with('error', 'An unexpected error occurred. Please try again.');
+        }
 
-        // 3. Use updateOrCreate to handle both new subscriptions and plan changes.
-        // It will find a subscription for the company and update it, OR create a new one.
-        SubscriptionOrder::updateOrCreate(
-            ['company_id' => $company->company_id], // Find a subscription with this company_id...
-            [
-                // ...and update it with this data (or create it if not found).
-                'subscription_tier' => $plan->subscription_tier,
-                'subscription_price' => $plan->subscription_price,
-                'is_paid' => true,
-                'monthly' => $plan->monthly,
-                'start_date' => now(),
-                'renew_date' => now()->addMonth(),
-                'company_admin_id' => $admin->admin_id,
-            ]
-        );
-
-        // 4. Redirect the user to their dashboard with a success message.
-        return redirect()->route('dashboard')->with('status', 'Subscription successful! Your plan has been updated.');
+        // If successful, redirect to the dashboard
+        return redirect()->route('dashboard')->with('status', 'Subscription successful! Welcome aboard.');
     }
 
     /**
