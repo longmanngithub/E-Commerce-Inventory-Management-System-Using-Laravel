@@ -15,47 +15,44 @@
                         <form action="{{ route('orders.index') }}" method="GET">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+                                {{-- Search --}}
                                 <div class="md:col-span-2">
                                     <label for="search" class="block font-medium text-sm text-gray-700">Search</label>
                                     <x-text-input id="search" class="block mt-1 w-full" type="text" name="search" :value="request('search')" placeholder="Order # or Customer Name..." />
                                 </div>
 
-                                {{-- Status Filter --}}
+                                {{-- Status --}}
                                 <div>
-                                    <label class="block font-medium text-sm text-gray-700">Status</label>
-                                    <div class="mt-2">
-                                        <label for="show_paid_only" class="inline-flex items-center">
-                                            <input type="checkbox" id="show_paid_only" name="show_paid_only" value="1" @if(request('show_paid_only')) checked @endif class="rounded h-4 w-4 text-indigo-600">
-                                            <span class="ms-2 text-sm text-gray-600">Show paid only</span>
-                                        </label>
-                                    </div>
+                                    <label for="status" class="block font-medium text-sm text-gray-700">Status</label>
+                                    <select name="status" id="status" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                        <option value="">All</option>
+                                        <option value="Paid" @selected(request('status') == 'Paid')>Paid</option>
+                                        <option value="Canceled" @selected(request('status') == 'Canceled')>Canceled</option>
+                                    </select>
                                 </div>
 
-                                {{-- Sort By Filter --}}
+                                {{-- Sort --}}
                                 <div>
                                     <label for="sort_by" class="block font-medium text-sm text-gray-700">Sort By</label>
-                                    <select name="sort_by" id="sort_by" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                        <option value="date_desc" @if(request('sort_by', 'date_desc') == 'date_desc') selected @endif>Newest First</option>
-                                        <option value="date_asc" @if(request('sort_by') == 'date_asc') selected @endif>Oldest First</option>
-                                        <option value="total_desc" @if(request('sort_by') == 'total_desc') selected @endif>Total: High to Low</option>
-                                        <option value="total_asc" @if(request('sort_by') == 'total_asc') selected @endif>Total: Low to High</option>
+                                    <select name="sort_by" id="sort_by" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                        <option value="date_desc" @selected(request('sort_by') == 'date_desc')>Date: Newest to Oldest</option>
+                                        <option value="date_asc" @selected(request('sort_by') == 'date_asc')>Date: Oldest to Newest</option>
+                                        <option value="price_desc" @selected(request('sort_by') == 'price_desc')>Price: High to Low</option>
+                                        <option value="price_asc" @selected(request('sort_by') == 'price_asc')>Price: Low to High</option>
                                     </select>
                                 </div>
 
                                 <div class="flex items-end space-x-2">
                                     <x-primary-button>Apply</x-primary-button>
-
                                     <a href="{{ route('orders.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                                         Reset
                                     </a>
                                 </div>
-
-
                             </div>
                         </form>
                     </div>
 
-
+                    {{-- Table --}}
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                         <tr>
@@ -70,16 +67,22 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($orders as $order)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $order->order_id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ optional($order->customer)->customer_name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ \Carbon\Carbon::parse($order->order_date)->format('d/m/Y h:i A') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($order->total_amount, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $order['id'] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ $order['customerName'] ?? 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ \Carbon\Carbon::parse($order['date'])->format('d/m/Y h:i A') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${{ number_format($order['totalAmount'], 2) }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $statusColor = $order->order_status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                                        $statusColor = $order['status'] === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                                     @endphp
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                            {{ $order->order_status }}
+                                            {{ $order['status'] }}
                                         </span>
                                 </td>
 
@@ -98,22 +101,23 @@
                                         </x-slot>
 
                                         <x-slot name="content">
-                                            <x-dropdown-link :href="route('orders.show', $order)">
+                                            <x-dropdown-link :href="route('orders.show', $order['id'])">
                                                 {{ __('View Details') }}
                                             </x-dropdown-link>
-                                            <x-dropdown-link :href="'mailto:' . optional($order->customer)->customer_email . '?subject=Regarding Order %23' . $order->order_id">
-                                                {{ __('Email Customer') }}
-                                            </x-dropdown-link>
+                                            @if(isset($order['customerEmail']))
+                                                <x-dropdown-link :href="'mailto:' . $order['customerEmail'] . '?subject=Regarding Order %23' . $order['id']">
+                                                    {{ __('Email Customer') }}
+                                                </x-dropdown-link>
+                                            @endif
 
-                                            {{-- Show Cancel button only if the order is not already canceled --}}
-                                            @if($order->order_status !== 'Canceled')
-                                                <form action="{{ route('orders.cancel', $order) }}" method="POST">
+                                            @if($order['status'] !== 'Canceled')
+                                                <form action="{{ route('orders.cancel', $order['id']) }}" method="POST">
                                                     @csrf
-                                                    <x-dropdown-link :href="route('orders.cancel', $order)"
+                                                    <x-dropdown-link :href="route('orders.cancel', $order['id'])"
                                                                      onclick="event.preventDefault();
-                                        if(confirm('Are you sure you want to cancel this order?')) {
-                                            this.closest('form').submit();
-                                        }">
+                                                            if(confirm('Are you sure you want to cancel this order?')) {
+                                                                this.closest('form').submit();
+                                                            }">
                                                         {{ __('Cancel Order') }}
                                                     </x-dropdown-link>
                                                 </form>
@@ -133,6 +137,7 @@
                     <div class="mt-4">
                         {{ $orders->links() }}
                     </div>
+
                 </div>
             </div>
         </div>
