@@ -8,56 +8,90 @@ use App\Models\UserInvitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class InvitationController extends Controller
 {
-    public function accept($token)
+    /**
+     * Show the set password form by verifying the token with the API.
+     */
+    public function accept(Request $request, $token)
     {
-        $invitation = UserInvitation::where('token', $token)->firstOrFail();
-        return view('auth.set-password', ['invitation' => $invitation]);
+        $response = Http::withHeaders(['Accept' => 'application/json'])
+            ->get(config('services.api.url')."/invitations/{$token}");
+
+        if ($response->failed()) {
+            // Redirect to a page with an "Invalid Link" error
+            return redirect()->route('login')->with('error', 'This invitation link is invalid or has expired.');
+        }
+
+        $invitationData = $response->json('data');
+        $request->session()->put('invitation_data', $invitationData);
+
+        return view('auth.set-password', compact('invitationData'));
     }
 
+    /**
+     * Store the new user's password by calling the API.
+     */
     public function storePassword(Request $request)
     {
-        $data = $request->validate([
-            'token' => ['required', 'string'],
-            'name' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-        ]);
+        $invitationData = $request->session()->get('invitation_data');
+        if (!$invitationData) {
+            return redirect()->route('login')->with('error', 'Your session has expired.');
+        }
 
-        // First, log out any user who is currently logged in (like the admin).
+        // Call the API to create the user account
+        $response = Http::withHeaders(['Accept' => 'application/json'])
+            ->post(config('services.api.url').'/invitations/complete', [
+                'token' => $invitationData['token'],
+                'password' => $request->password,
+                'password_confirmation' => $request->password_confirmation,
+            ]);
+        if ($response->failed()) {
+            return back()->withErrors($response->json('errors'))->withInput();
+        }
+
         Auth::guard('company_admin')->logout();
         Auth::guard('company_staff')->logout();
-        Auth::guard('platform_owner')->logout();
 
-        // Invalidate the old session to be absolutely sure.
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // --- Log in the new user via the API ---
+        $invitationData = $request->session()->get('invitation_data');
+        $loginResponse = Http::withHeaders(['Accept' => 'application/json'])
+            ->post(config('services.api.url').'/auth/login', [
+                'email' => $invitationData['email'],
+                'password' => $request->password,
+            ]);
 
-        $invitation = \App\Models\UserInvitation::where('token', $data['token'])->firstOrFail();
+        if ($loginResponse->failed()) {
+            return redirect()->route('login')->with('error', 'Account created, but automatic login failed.');
+        }
 
-        // Determine which model to use based on the role stored in the invitation
-        $model = $invitation->role === 'admin' ? CompanyAdmin::class : CompanyStaff::class;
-        $nameField = $invitation->role === 'admin' ? 'admin_name' : 'staff_name';
-        $emailField = $invitation->role === 'admin' ? 'admin_email' : 'staff_email';
-        $passwordField = $invitation->role === 'admin' ? 'admin_password' : 'staff_password';
+        // Get the user data and guard from the successful login response
+        $userData = $loginResponse->json('user');
+        $guard = $loginResponse->json('guard');
 
-        $user = $model::create([
-            $nameField => $data['name'], // You may need to adjust how the name is set
-            $emailField => $invitation->email,
-            $passwordField => Hash::make($data['password']),
-            'company_id' => $invitation->company_id,
+        // Get the user's ID from the correct key based on their role
+        $userId = $userData['admin_id'] ?? $userData['staff_id'] ?? null;
 
-            // If the user is a staff member, set their permissions
-            'permissions' => $invitation->role === 'staff' ? $invitation->permissions : [],
-        ]);
+        if (!$userId) {
+            return back()->with('error', 'Could not identify user from API response.');
+        }
 
-        // Now, log the NEW user in with a clean session.
-        Auth::guard('company_' . $invitation->role)->login($user);
+        // Determine the correct Model class
+        $userModelClass = $guard === 'company_admin' ? \App\Models\CompanyAdmin::class : \App\Models\CompanyStaff::class;
 
-        // Delete the invitation so it can't be used again
-        $invitation->delete();
+        // Fetch a FRESH user from the local DB using the correct ID
+        $user = $userModelClass::find($userId);
 
-        return redirect()->route('dashboard')->with('status', 'Your account has been activated!');
+        if ($user) {
+            Auth::guard($guard)->login($user, true);
+            $request->session()->regenerate();
+            $request->session()->put('api_token', $loginResponse->json('token'));
+            $request->session()->forget('invitation_data');
+            return redirect()->intended(route('dashboard'))->with('status', 'Welcome! Your account has been activated.');
+        }
+
+        return redirect()->route('login')->with('error', 'Login after registration failed.');
     }
 }

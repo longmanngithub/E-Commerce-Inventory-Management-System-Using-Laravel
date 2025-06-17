@@ -6,52 +6,49 @@ use App\Models\AuditLog;
 use App\Models\CompanyAdmin;
 use App\Models\CompanyStaff;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class LogController extends Controller
 {
+    /**
+     * Helper to call internal API with auth
+     */
+    private function api(Request $request)
+    {
+        return Http::withToken($request->session()->get('api_token'))
+            ->withHeaders(['Accept' => 'application/json']);
+    }
+
+    /**
+     * Index function calling internal API and returning view
+     */
     public function index(Request $request)
     {
-        $companyId = Auth::user()->company_id;
+        $url = config('services.api.url') . '/logs';
 
-        // Start a query for all AuditLog entries
-        $query = AuditLog::query();
+        // Pass along all filters from request (search, sort_by, actions, etc.)
+        $response = $this->api($request)->get($url, $request->query());
 
-        // Add a condition to only get logs where the 'user' (which can be an admin or staff)
-        // belongs to the currently logged-in user's company.
-        $query->whereHasMorph(
-            'user', // This is the name of our polymorphic relationship
-            [CompanyAdmin::class, CompanyStaff::class], // The possible user types
-            function ($query) use ($companyId) {
-                // This condition is applied to both the CompanyAdmin and CompanyStaff queries
-                $query->where('company_id', $companyId);
-            }
+        // Check for failed response
+        if (!$response->successful()) {
+            abort($response->status(), 'Failed to fetch audit logs from API.');
+        }
+
+        $payload = $response->json();
+
+        $logs = new LengthAwarePaginator(
+            $payload['data'] ?? [],
+            $payload['meta']['total'] ?? 0,
+            $payload['meta']['per_page'] ?? 10,
+            $payload['meta']['current_page'] ?? 1,
+            [
+                'path'  => $request->url(),
+                'query' => $request->query(),
+            ]
         );
 
-        // If a search term is provided, filter by the 'details' column
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where('details', 'LIKE', "%{$searchTerm}%");
-        }
-
-        // Filter by action types
-        if ($request->filled('actions')) {
-            $query->whereIn('action', $request->actions);
-        }
-
-        // --- APPLY SORTING ---
-        if ($request->input('sort_by') === 'oldest') {
-            $query->orderBy('timestamp', 'asc');
-        } else {
-            // Default to newest first
-            $query->orderBy('timestamp', 'desc');
-        }
-
-        // Eager load the user data for display and sort by the newest log first
-        $logs = $query->with('user')
-            ->latest('timestamp')
-            ->paginate(15);
-
-        return view('logs.index', compact('logs'));
+        return view('logs.index', ['logs' => $logs]);
     }
 }

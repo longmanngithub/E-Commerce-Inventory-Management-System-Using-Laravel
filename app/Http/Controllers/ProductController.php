@@ -7,7 +7,9 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Stock;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -18,166 +20,94 @@ class ProductController extends Controller
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    public function index(Request $request)
-    {
-        // Start a base query for products belonging to the user's company
-        $query = Product::where('company_id', Auth::user()->company_id);
-
-        // --- SEARCH ---
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('product_name', 'LIKE', "%{$searchTerm}%")
-                    ->orWhere('product_SKU', 'LIKE', "%{$searchTerm}%");
-            });
-        }
-
-        // --- APPLY FILTERS ---
-        if ($request->filled('categories')) {
-            $query->whereIn('category_id', $request->categories);
-        }
-        if ($request->filled('in_stock_only')) {
-            $query->whereHas('stocks', function ($q) {
-                $q->where('stock_quantity', '>', 0);
-            });
-        }
-
-        // --- APPLY SORTING ---
-        if ($request->filled('sort_by')) {
-            if ($request->sort_by == 'price_asc') {
-                $query->orderBy('product_price', 'asc');
-            } elseif ($request->sort_by == 'price_desc') {
-                $query->orderBy('product_price', 'desc');
-            }
-        } else {
-            // CORRECTED DEFAULT SORT: Order by the newest product ID first.
-            $query->orderBy('product_id', 'desc');
-        }
-
-        // Get all categories for the filter form
-        $categories = \App\Models\Category::all();
-
-        // Paginate the final results
-        $products = $query->with(['category', 'stocks'])->paginate(10)->withQueryString();
-
-        return view('products.index', compact('products', 'categories'));
+    private function api(Request $request) {
+        return Http::withToken($request->session()->get('api_token'))->withHeaders(['Accept' => 'application/json']);
     }
 
+    public function index(Request $request)
+    {
+        $response = $this->api($request)->get(config('services.api.url').'/products', $request->query());
+
+        $apiData = $response->json();
+
+        $products = new LengthAwarePaginator(
+            $apiData['data'] ?? [],
+                $apiData['meta']['total'] ?? 0,
+                $apiData['meta']['per_page'] ?? 15,
+                $apiData['meta']['current_page'] ?? 1,
+            ['path' => $request->url(), 'query' => $request->query()]);
+
+        $categoriesResponse = $this->api($request)->get(config('services.api.url').'/categories');
+        return view('products.index', ['products' => $products, 'categories' => $categoriesResponse->json('data', [])]);
+    }
+
+    /**
+     * Store the product in database
+     */
     public function store(Request $request)
     {
-        // LATER, we will add a permission check here like:
-        // if (Auth::user()->cannot('create-products')) { abort(403); }
+        $http = $this->api($request);
 
-        // 1. Validation remains the same and is correct.
-        $validatedData = $request->validate([
-            'product_name' => 'required|string|max:128',
-            'product_SKU' => 'required|string|unique:product,product_SKU',
-            'category_id' => 'required|integer|exists:category,category_id',
-            'stock_quantity' => 'required|integer|min:0',
-            'product_price' => 'required|numeric|min:0',
-            'purchase_date' => 'required|date|before_or_equal:today',
-            'product_expiry_date' => 'nullable|date',
-            'product_desc' => 'nullable|string',
-            'product_image' => 'nullable|image|max:2048',
-            'purchase_price' => 'required|numeric|min:0',
-            'reorder_point' => 'required|integer|min:0',
-        ]);
+        if ($request->hasFile('product_image')) {
+            $http->attach('product_image', file_get_contents($request->product_image), $request->product_image->getClientOriginalName());
+        }
 
-        $companyId = auth()->user()->company_id;
-        $imagePath = $request->hasFile('product_image') ? $request->file('product_image')->store('product-images', 'public') : null;
+        $response = $http->post(config('services.api.url').'/products', $request->except('product_image'));
 
-        // 2. Create the Product. NOTE: 'purchase_price' has been REMOVED from this array.
-        $product = Product::create([
-            'company_id' => $companyId,
-            'category_id' => $validatedData['category_id'],
-            'product_name' => $validatedData['product_name'],
-            'product_SKU' => $validatedData['product_SKU'],
-            'product_price' => $validatedData['product_price'],
-            'product_desc' => $validatedData['product_desc'],
-            'product_image' => $imagePath,
-            'product_expiry_date' => $validatedData['product_expiry_date'],
-            'reorder_point' => $validatedData['reorder_point'],
-        ]);
+        if ($response->failed()) {
+            return back()->withErrors($response->json('errors'))->with('error', $response->json('message'))->withInput();
+        }
 
-        // 3. Create the initial Stock record. NOTE: 'purchase_price' has been ADDED here.
-        Stock::create([
-            'product_id' => $product->product_id,
-            'stock_quantity' => $validatedData['stock_quantity'],
-            'stock_purchase_date' => $validatedData['purchase_date'],
-            'purchase_price' => $validatedData['purchase_price'], // <-- THE FIX
-            'company_id' => $companyId,
-        ]);
-
-        return redirect()->route('products.index')->with('status', 'Product added successfully!');
+        return redirect()->route('products.index')->with('status', 'Product created successfully!');
     }
 
     /**
      * Show the form for creating a new product.
      */
-    public function create()
+    public function create(Request $request)
     {
-        // Fetch ALL categories from the database
-        $categories = \App\Models\Category::all();
+        $categoriesResponse = $this->api($request)->get(config('services.api.url').'/categories');
 
-        return view('products.create', compact('categories'));
+        return view('products.create', ['categories' => $categoriesResponse->json('data', [])]);
     }
 
     /**
-     * Show the form for editing the specified product.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\View\View
+     * Show the form for editing the specified product by fetching data from the API.
      */
-    public function edit(Product $product)
+    public function edit(Request $request, $productId)
     {
-        // Because of Route-Model Binding, Laravel automatically finds the
-        // product from the database based on the ID in the URL.
+        // Make an API call to the 'show' endpoint to get the product's data
+        $productResponse = $this->api($request)->get(config('services.api.url')."/products/{$productId}");
 
-        // We also need to fetch all categories for the dropdown menu.
-        $categories = \App\Models\Category::all();
+        // We also need the list of all categories for the dropdown
+        $categoriesResponse = $this->api($request)->get(config('services.api.url').'/categories');
 
-        // Pass both the product and the categories to the view.
-        return view('products.edit', compact('product', 'categories'));
-    }
-
-    /**
-     * Update the specified product and its stock in storage.
-     */
-    public function update(Request $request, Product $product)
-    {
-        // 1. Validate only the fields that are editable.
-        $validatedData = $request->validate([
-            'product_price' => 'required|numeric|min:0',
-            'product_desc' => 'nullable|string', // Description is still validated and saved
-            'stock_quantity' => 'nullable|integer|min:0',
-            'product_image' => 'nullable|image|max:2048',
-            'reorder_point' => 'required|integer|min:0',
-        ]);
-
-        // 2. Update the Product model with its editable fields.
-        $product->update($request->only([
-            'product_price',
-            'product_desc',
-            'reorder_point',
-        ]));
-
-        // 3. Find and update the most recent stock record's quantity if provided
-        $latestStock = $product->stocks()->latest('stock_purchase_date')->first();
-        if ($latestStock && $request->filled('stock_quantity')) {
-            $latestStock->update([
-                'stock_quantity' => $request->stock_quantity,
-            ]);
+        if ($productResponse->failed()) {
+            abort(404, 'Product not found.');
         }
 
-        // 4. Handle image update
+        return view('products.edit', [
+            'product' => $productResponse->json('data'),
+            'categories' => $categoriesResponse->json('data', [])
+        ]);
+    }
+
+    /**
+     * Update the specified product by sending the data to the API.
+     */
+    public function update(Request $request, $productId)
+    {
+        $http = $this->api($request);
+        $payload = $request->except(['product_image', '_token', '_method']);
+
         if ($request->hasFile('product_image')) {
-            // Optional: Delete the old image to save space
-            if ($product->product_image) {
-                Storage::disk('public')->delete($product->product_image);
-            }
-            // Store the new image and update the database path
-            $imagePath = $request->file('product_image')->store('product-images', 'public');
-            $product->update(['product_image' => $imagePath]);
+            $http->attach('product_image', file_get_contents($request->product_image), $request->product_image->getClientOriginalName());
+        }
+
+        $response = $http->post(config('services.api.url') . "/products/{$productId}", array_merge($payload, ['_method' => 'PUT']));
+
+        if ($response->failed()) {
+            return back()->withErrors($response->json('errors'))->with('error', $response->json('message'))->withInput();
         }
 
         return redirect()->route('products.index')->with('status', 'Product updated successfully!');
@@ -186,151 +116,78 @@ class ProductController extends Controller
     /**
      * Remove the specified product from storage.
      */
-    public function destroy(Product $product)
+    public function destroy($productId)
     {
-        $this->authorize('delete-product', $product);
+        $this->api(request())->delete(config('services.api.url').'/products/' . $productId);
 
-        // 1. Delete the product's image from storage to keep things clean.
-        //    We check if an image exists before trying to delete it.
-        if ($product->product_image) {
-            Storage::disk('public')->delete($product->product_image);
-        }
-
-        // 2. Delete any related stock records.
-        //    This assumes a 'stock' relationship is defined on your Product model.
-        $product->stocks()->delete();
-
-        // 3. Delete the product itself.
-        $product->delete();
-
-        // 4. Redirect back to the product list with a success message.
-        return redirect()->route('products.index')->with('status', 'Product deleted successfully!');
+        return redirect()->route('products.index')->with('status', 'Product deleted successfully.');
     }
 
     /**
      * Display the specified product and its purchase history.
      */
-    public function show(Request $request, Product $product)
+    public function show(Request $request, $productId)
     {
-        // 1. Authorize that the user is allowed to see this product.
-        $this->authorize('update-product', $product);
-
-        // 2. Eager load relationships for the primary product (for the Overview tab).
-        $product->load('category', 'stocks');
-
-        // 3. Calculate stats for the "Overview" tab using the primary product.
-        $currentStock = $product->stocks->sum('stock_quantity');
-        $reorderPoint = $product->reorder_point;
-        $monthlySales = OrderItem::where('product_id', $product->product_id)
-            ->whereHas('order', function ($query) {
-                $query->where('order_status', 'Paid')->where('order_date', '>=', now()->subDays(30));
-            })
-            ->sum('order_item_quantity');
-
-        // 4. --- NEW LOGIC for "Purchases" Tab ---
-        // Get all product IDs that share the same name for this company.
-        $allProductIdsWithName = Product::where('company_id', $product->company_id)
-            ->where('product_name', $product->product_name)
-            ->pluck('product_id');
-
-        // Start a query for all stock records related to any of those IDs.
-        $purchasesQuery = Stock::whereIn('product_id', $allProductIdsWithName);
-
-        // Apply sorting from the request.
-        if ($request->input('sort_by') === 'oldest') {
-            $purchasesQuery->orderBy('stock_purchase_date', 'asc');
-        } else {
-            $purchasesQuery->orderBy('stock_purchase_date', 'desc'); // Default to newest
+        // API Call 1: Get the main product data for the Overview tab
+        $productResponse = $this->api($request)->get(config('services.api.url')."/products/{$productId}");
+        if ($productResponse->failed()) {
+            abort(404);
         }
+        $productData = $productResponse->json('data');
 
-        // Paginate the final results and keep the sort order in the pagination links.
-        $purchases = $purchasesQuery->paginate(10)->withQueryString();
+        // API Call 2: Get the paginated purchase history for the Purchases tab
+        // We pass along any sort parameters from the user's request.
+        $purchasesResponse = $this->api($request)->get(config('services.api.url')."/products/{$productId}/purchases", $request->query());
+        $purchaseApiData = $purchasesResponse->json();
 
-        // 5. Pass all data to the single view.
-        return view('products.show', compact(
-            'product',
-            'currentStock',
-            'reorderPoint',
-            'monthlySales',
-            'purchases'
-        ));
+        // Manually create the Paginator object for the view
+        $purchases = new LengthAwarePaginator(
+            $purchaseApiData['data'] ?? [],
+            $purchaseApiData['meta']['total'] ?? 0,
+            $purchaseApiData['meta']['per_page'] ?? 10,
+            $purchaseApiData['meta']['current_page'] ?? 1,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('products.show', [
+            'product' => $productData,
+            'purchases' => $purchases,
+        ]);
     }
 
-    /**
-     * Bulk delete function
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function bulkDestroy(Request $request)
     {
-        // Authorize the action before doing anything else
-        $this->authorize('bulk-delete-products', Product::class);
+        // Authorize the action on the front-app side first.
+        $this->authorize('bulk-delete-products', \App\Models\Product::class);
 
+        // Validate that the product_ids are present.
         $request->validate([
-            'product_ids' => 'required|array',
-            'product_ids.*' => 'integer|exists:product,product_id',
+            'product_ids' => 'required|array'
         ]);
 
-        $productIds = $request->input('product_ids');
+        // Get the token and send the array of IDs to the API.
+        $token = $request->session()->get('api_token');
+        $response = Http::withToken($token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->post(config('services.api.url').'/products/bulk-delete', [
+                'product_ids' => $request->product_ids,
+            ]);
 
-        // Find all products to delete to get their image paths
-        $productsToDelete = Product::whereIn('product_id', $productIds)->get();
-        foreach ($productsToDelete as $product) {
-            if ($product->product_image) {
-                Storage::disk('public')->delete($product->product_image);
-            }
+        if ($response->failed()) {
+//            dd($response->json(), $response->status());
+            return redirect()->route('products.index')->with('error', 'An error occurred while deleting products.');
         }
-
-        // Delete related stock records and then the products themselves
-        Stock::whereIn('product_id', $productIds)->delete();
-        Product::whereIn('product_id', $productIds)->delete();
 
         return redirect()->route('products.index')->with('status', 'Selected products have been deleted successfully!');
     }
 
     /**
      * Set status for each product
-     *
-     * @param Request $request
-     * @param Product $product
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function toggleStatus(Request $request, Product $product)
+    public function toggleStatus($productId)
     {
-        // Authorize that the user can update this product
-        $this->authorize('update-product', $product);
+        $this->api(request())->patch(config('services.api.url').'/products/' . $productId . '/toggle-status');
 
-        $company = Auth::user()->company;
-        $newStatus = $product->status === 'Active' ? 'Inactive' : 'Active';
-
-        // --- THE CRITICAL LIMIT CHECK ---
-        // If the user is trying to ACTIVATE a product, check their limit
-        if ($newStatus === 'Active') {
-            // First, check if the company has a subscription at all
-            if (!$company->subscription || !$company->subscription->plan) {
-                return redirect()->route('admin.products.index')->with('error', 'You must have an active subscription to activate products.');
-            }
-
-            // Get the limit from the subscription plan
-            $planLimit = $company->subscription->plan->product_limit;
-
-            // A null limit means unlimited products are allowed
-            if ($planLimit !== null) {
-                $activeProductCount = Product::where('company_id', $company->company_id)->where('status', 'Active')->count();
-
-                if ($activeProductCount >= $planLimit) {
-                    // If they are at or over their limit, return an error
-                    return redirect()->route('admin.products.index')->with('error', "You have reached your plan's limit of {$planLimit} active products. Please upgrade your plan or deactivate other products.");
-                }
-            }
-        }
-
-        // If the check passes, update the status
-        $product->status = $newStatus;
-        $product->save();
-
-        return redirect()->route('products.index')->with('status', 'Product status updated successfully!');
+        return redirect()->route('products.index')->with('status', 'Product status updated.');
     }
 }
