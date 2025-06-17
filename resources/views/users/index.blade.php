@@ -27,51 +27,52 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($users as $user)
-                            <tr>
-
-                                {{-- Display name --}}
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $user->admin_name ?? $user->staff_name }}</td>
-
-                                {{-- Display email --}}
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $user->admin_email ?? $user->staff_email }}</td>
-
-                                {{-- Display role --}}
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user instanceof \App\Models\CompanyAdmin)
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                Admin
-                                            </span>
-                                    @else
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Staff
-                                            </span>
+                            <tr class="border-b">
+                                <td class="px-6 py-4">{{ $user['name'] }}</td>
+                                <td class="px-6 py-4">{{ $user['email'] }}</td>
+                                <td class="px-6 py-4">{{ $user['role'] }}</td>
+                                <td class="px-6 py-4">
+                                    {{-- Display permissions for staff --}}
+                                    @if($user['type'] === 'staff' && !empty($user['permissions']))
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($user['permissions'] as $permission)
+                                                @php
+                                                    // THE FIX: Add color coding for different permissions
+                                                    $permissionColor = match($permission) {
+                                                        'create_product' => 'bg-blue-100 text-blue-800',
+                                                        'update_product' => 'bg-green-100 text-green-800',
+                                                        'delete_product' => 'bg-red-100 text-red-800',
+                                                        default => 'bg-gray-100 text-gray-800',
+                                                    };
+                                                @endphp
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $permissionColor }}">
+                                                            {{ ucwords(str_replace('_', ' ', $permission)) }}
+                                                        </span>
+                                            @endforeach
+                                        </div>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex justify-end items-center space-x-2">
+                                        {{-- Only show Edit button for Staff --}}
+                                        @if($user['type'] === 'staff')
+                                            <button class="text-indigo-600 hover:text-indigo-900"
+                                                    x-data
+                                                    @click.prevent="$dispatch('open-modal', { name: 'edit-user', user: {{ json_encode($user) }} })">
+                                                Edit
+                                            </button>
+                                        @endif
 
-                                {{-- Display actions--}}
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                    <div class="flex items-center justify-end space-x-4">
-                                        @if($user instanceof \App\Models\CompanyStaff)
-                                            {{-- Actions for Staff --}}
-                                            <a href="{{ route('management.users.edit.staff', $user->staff_id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                            <form action="{{ route('management.users.destroy.staff', $user->staff_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                            </form>
-                                        @else
-                                            {{-- Actions for Admins --}}
-                                            @if(Auth::user()->id !== $user->admin_id && !$user->is_owner)
-                                                <form action="{{ route('management.users.destroy.admin', $user->admin_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                                </form>
-                                            @endif
+                                        {{-- Use the correct delete route based on user type --}}
+                                        @if($user['role'] !== 'Company Owner' && ($user['id'] !== Auth::id()))
+                                        <form action="{{ $user['type'] === 'admin' ? route('management.users.destroy.admin', $user['id']) : route('management.users.destroy.staff', $user['id']) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                        </form>
                                         @endif
                                     </div>
                                 </td>
-
                             </tr>
                         @empty
                             <tr>
@@ -85,3 +86,46 @@
         </div>
     </div>
 </x-app-layout>
+
+
+<x-modal name="edit-user" focusable>
+    {{-- We use Alpine.js to manage the form data --}}
+    <div x-data="{ user: null, permissions: {} }"
+         @open-modal.window="if ($event.detail.name === 'edit-user') {
+             user = $event.detail.user;
+             permissions.create_product = user.permissions.includes('create_product');
+             permissions.update_product = user.permissions.includes('update_product');
+             permissions.delete_product = user.permissions.includes('delete_product');
+         }">
+
+        <template x-if="user">
+            <form :action="'/management/users/staff/' + user.id" method="POST" class="p-6">
+                @csrf
+                @method('PUT')
+
+                <h2 class="text-lg font-medium text-gray-900" x-text="'Edit Permissions for ' + user.name"></h2>
+                <p class="mt-1 text-sm text-gray-600">You can only edit permissions for Staff members.</p>
+
+                <div class="mt-6 space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="permissions[]" value="create_product" x-model="permissions.create_product">
+                        <span class="ms-2 text-sm text-gray-600">Create Product</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="permissions[]" value="update_product" x-model="permissions.update_product">
+                        <span class="ms-2 text-sm text-gray-600">Update Product</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="permissions[]" value="delete_product" x-model="permissions.delete_product">
+                        <span class="ms-2 text-sm text-gray-600">Delete Product</span>
+                    </label>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close')">Cancel</x-secondary-button>
+                    <x-primary-button class="ms-3">Save Permissions</x-primary-button>
+                </div>
+            </form>
+        </template>
+    </div>
+</x-modal>

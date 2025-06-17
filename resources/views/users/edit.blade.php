@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Edit User: {{ $user->admin_name ?? $user->staff_name }}
+            Edit User: {{ $user['name'] }}
         </h2>
     </x-slot>
 
@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     {{-- Note: The user ID could be admin_id or staff_id --}}
-                    <form method="POST" action="{{ route('management.users.update.staff', $user->staff_id) }}">
+                    <form method="POST" action="{{ route('management.users.update.staff', $user['id']) }}">
                         @csrf
                         @method('PUT')
 
@@ -24,7 +24,7 @@
                                     // The list of all possible permissions
                                     $allPermissions = ['create_product', 'update_product', 'delete_product'];
                                     // The permissions this user currently has (defaults to empty array if null)
-                                    $userPermissions = $user->permissions ?? [];
+                                    $userPermissions = $user['permissions'];
                                 @endphp
 
                                 <div class="space-y-2">

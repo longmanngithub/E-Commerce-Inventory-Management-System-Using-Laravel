@@ -29,10 +29,10 @@
                                     @foreach ($categories as $category)
                                         <div class="mt-1">
                                             <label class="inline-flex items-center">
-                                                <input type="checkbox" name="categories[]" value="{{ $category->category_id }}"
-                                                       @if(in_array($category->category_id, request('categories', []))) checked @endif
+                                                <input type="checkbox" name="categories[]" value="{{ $category['id'] }}"
+                                                       @if(in_array($category['id'], request('categories', []))) checked @endif
                                                        class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                                                <span class="ms-2 text-sm text-gray-700">{{ $category->category_name }}</span>
+                                                <span class="ms-2 text-sm text-gray-700">{{ $category['name'] }}</span>
                                             </label>
                                         </div>
                                     @endforeach
@@ -77,7 +77,6 @@
                     @can('bulk-delete-products')
                     <form id="bulk-delete-form" action="{{ route('products.bulkDestroy') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all selected products? This action cannot be undone.');">
                         @csrf
-                        @method('DELETE')
 
                         <div class="mb-4">
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 disabled:opacity-50" id="bulk-delete-btn" disabled>
@@ -103,19 +102,20 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                                 </thead>
+
                                 <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($products as $product)
                                     <tr>
                                         {{-- Checkbox --}}
                                         <td class="px-6 py-4">
-                                            <input type="checkbox" name="product_ids[]" value="{{ $product->product_id }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm">
+                                            <input type="checkbox" @change="toggleProduct({{ $product['id'] }})" name="product_ids[]" value="{{ $product['id'] }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm">
                                         </td>
 
                                         {{-- Display Product Image --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($product->product_image)
+                                            @if($product['imageUrl'])
                                                 <div class="h-16 w-16">
-                                                    <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
+                                                    <img src="{{ $product['imageUrl'] }}" alt="{{ $product['name'] }}" class="h-full w-full object-contain">
                                                 </div>
                                             @else
                                                 <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
@@ -125,40 +125,44 @@
                                         </td>
 
                                         {{-- Product name --}}
-                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product['name'] }}</td>
 
                                         {{-- Product SKU --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product['sku'] }}</td>
 
                                         {{-- Display Category Name --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{-- We use optional() in case a product somehow has no category --}}
-                                            {{ optional($product->category)->category_name }}
+                                            {{ $product['category'] }}
                                         </td>
 
                                         {{-- Product price --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product['price'], 2) }}</td>
 
                                         {{-- Display Stock Quantity --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 
                                             {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
-                                            {{ $product->stocks->sum('stock_quantity') }}
+                                            {{ $product['stockQuantity'] }}
 
                                         </td>
 
                                         {{-- Status Cell --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="{{ route('products.toggleStatus', $product->product_id) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
-                                                {{ $product->status }}
-                                            </a>
+                                            <form action="{{ route('products.toggleStatus', $product['id']) }}" method="POST">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['status'] === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                                    {{ $product['status'] }}
+                                                </button>
+                                            </form>
                                         </td>
 
                                         {{-- Availability status --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @php
                                                 // Set the color based on the status
-                                                $statusColor = match($product->stock_status) {
+                                                $statusColor = match($product['stockStatus']) {
                                                     'In Stock' => 'bg-green-100 text-green-800',
                                                     'Low Stock' => 'bg-yellow-100 text-yellow-800',
                                                     'Out of Stock' => 'bg-red-100 text-red-800',
@@ -166,7 +170,7 @@
                                                 };
                                             @endphp
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                        {{ $product->stock_status }}
+                                        {{ $product['stockStatus'] }}
                                     </span>
                                         </td>
 
@@ -177,24 +181,24 @@
                                             <div class="flex items-center space-x-4">
 
                                                 {{-- The "View" link is available to everyone --}}
-                                                <a href="{{ route('products.show', $product->product_id) }}" class="text-blue-600 hover:text-blue-900">
+                                                <a href="{{ route('products.show', $product['id']) }}" class="text-blue-600 hover:text-blue-900">
                                                     View
                                                 </a>
 
                                                 {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
-                                                @can('update-product', $product)
-                                                    <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                @if($product['permissions']['update'])
+                                                    <a href="{{ route('products.edit', $product['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                                         Edit
                                                     </a>
-                                                @endcan
+                                                @endif
 
                                                 {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
-                                                @can('delete-product', $product)
+                                                @if($product['permissions']['delete'])
                                                     <button type="button" class="text-red-600 hover:text-red-900"
-                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
+                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product['id']) }}')">
                                                         Delete
                                                     </button>
-                                                @endcan
+                                                @endif
 
                                             </div>
                                         </td>
@@ -237,9 +241,9 @@
 
                                         {{-- Display Product Image --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($product->product_image)
+                                            @if($product['imageUrl'])
                                                 <div class="h-16 w-16">
-                                                    <img src="{{ asset('storage/' . $product->product_image) }}" alt="{{ $product->product_name }}" class="h-full w-full object-contain">
+                                                    <img src="{{ $product['imageUrl'] }}" alt="{{ $product['name'] }}" class="h-full w-full object-contain">
                                                 </div>
                                             @else
                                                 <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-md">
@@ -249,32 +253,32 @@
                                         </td>
 
                                         {{-- Product name --}}
-                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product->product_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ $product['name'] }}</td>
 
                                         {{-- Product SKU --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->product_SKU }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product['sku'] }}</td>
 
                                         {{-- Display Category Name --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{-- We use optional() in case a product somehow has no category --}}
-                                            {{ optional($product->category)->category_name }}
+                                            {{ $product['category'] }}
                                         </td>
 
                                         {{-- Product price --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product->product_price, 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ number_format($product['price'], 2) }}</td>
 
                                         {{-- Display Stock Quantity --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 
                                             {{-- This line is crucial. It sums the stock ONLY for the current $product in the loop. --}}
-                                            {{ $product->stocks->sum('stock_quantity') }}
+                                            {{ $product['stockQuantity'] }}
 
                                         </td>
 
                                         {{-- Status Cell --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="{{ route('products.toggleStatus', $product->product_id) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product->status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
-                                                {{ $product->status }}
+                                            <a href="{{ route('products.toggleStatus', $product['id']) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['status'] === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
+                                                {{ $product['status'] }}
                                             </a>
                                         </td>
 
@@ -282,7 +286,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @php
                                                 // Set the color based on the status
-                                                $statusColor = match($product->stock_status) {
+                                                $statusColor = match($product['stockStatus']) {
                                                     'In Stock' => 'bg-green-100 text-green-800',
                                                     'Low Stock' => 'bg-yellow-100 text-yellow-800',
                                                     'Out of Stock' => 'bg-red-100 text-red-800',
@@ -290,7 +294,7 @@
                                                 };
                                             @endphp
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                        {{ $product->stock_status }}
+                                        {{ $product['stockStatus'] }}
                                     </span>
                                         </td>
 
@@ -301,24 +305,24 @@
                                             <div class="flex items-center space-x-4">
 
                                                 {{-- The "View" link is available to everyone --}}
-                                                <a href="{{ route('products.show', $product->product_id) }}" class="text-blue-600 hover:text-blue-900">
+                                                <a href="{{ route('products.show', $product['id']) }}" class="text-blue-600 hover:text-blue-900">
                                                     View
                                                 </a>
 
                                                 {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
-                                                @can('update-product', $product)
-                                                    <a href="{{ route('products.edit', $product->product_id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                @if($product['permissions']['update'])
+                                                    <a href="{{ route('products.edit', $product['id']) }}" class="text-indigo-600 hover:text-indigo-900">
                                                         Edit
                                                     </a>
-                                                @endcan
+                                                @endif
 
                                                 {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
-                                                @can('delete-product', $product)
+                                                @if($product['permissions']['delete'])
                                                     <button type="button" class="text-red-600 hover:text-red-900"
-                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product->product_id) }}')">
+                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product['id']) }}')">
                                                         Delete
                                                     </button>
-                                                @endcan
+                                                @endif
 
                                             </div>
                                         </td>
@@ -343,7 +347,7 @@
                     </form>
 
 
-                    {{-- Add pagination links --}}
+                    {{-- Custom Pagination for API responses --}}
                     <div class="mt-4">
                         {{ $products->links() }}
                     </div>
@@ -357,42 +361,45 @@
     {{-- Script for both "Select All" and the new single delete function --}}
     @push('scripts')
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const selectAll = document.getElementById('select-all-checkbox');
-                const checkboxes = document.querySelectorAll('.product-checkbox');
-                const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+            function productManager() {
+                return {
+                    selectedProductIds: [],
 
-                function toggleButtonState() {
-                    let checkedCount = 0;
-                    checkboxes.forEach(checkbox => {
-                        if (checkbox.checked) {
-                            checkedCount++;
+                    init() {
+                        console.log("Alpine component initialized");
+                    },
+
+                    toggleProduct(productId) {
+                        if (this.selectedProductIds.includes(productId)) {
+                            this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
+                        } else {
+                            this.selectedProductIds.push(productId);
                         }
-                    });
-                    bulkDeleteBtn.disabled = checkedCount === 0;
-                }
+                        console.log('Selected:', this.selectedProductIds);
+                    },
 
-                selectAll.addEventListener('click', function (event) {
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = event.target.checked;
-                    });
-                    toggleButtonState();
-                });
+                    bulkDelete() {
+                        console.log('Deleting:', this.selectedProductIds); // should log selected IDs
 
-                checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener('click', function() {
-                        toggleButtonState();
-                    });
-                });
-
-                toggleButtonState(); // Initial check
-            });
-
-            function confirmSingleDelete(deleteUrl) {
-                if (confirm('Are you sure you want to delete this product?')) {
-                    const form = document.getElementById('single-delete-form');
-                    form.action = deleteUrl; // Set the correct action URL
-                    form.submit(); // Submit the hidden form
+                        fetch('/api/products/bulk-destroy', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                product_ids: this.selectedProductIds
+                            })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                alert(data.message);
+                                // reload or update UI here
+                            })
+                            .catch(err => {
+                                console.error('Error deleting:', err);
+                            });
+                    }
                 }
             }
         </script>

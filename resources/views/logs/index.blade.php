@@ -53,15 +53,15 @@
                         </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($logs as $log)
+                        @forelse($logs['data'] ?? [] as $log)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ $log->user->staff_name ?? $log->user->admin_name ?? 'Unknown User' }}
+                                    {{ $log['user']['staff_name'] ?? $log['user']['admin_name'] ?? 'Unknown User' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{-- This block sets the color class based on the action text --}}
                                     @php
-                                        $actionColor = match(strtolower($log->action)) {
+                                        $actionColor = match(strtolower($log['action'])) {
                                             'created' => 'bg-blue-100 text-blue-800',
                                             'updated' => 'bg-green-100 text-green-800',
                                             'deleted' => 'bg-red-100 text-red-800',
@@ -70,17 +70,17 @@
                                         };
                                     @endphp
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $actionColor }}">
-                        {{ $log->action }}
-                    </span>
+                                        {{ $log['action'] }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $log->entity_affected }}
+                                    {{ $log['entity_affected'] }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($log->timestamp)->format('d/m/Y h:i A') }}
+                                    {{ \Carbon\Carbon::parse($log['timestamp'])->format('d/m/Y h:i A') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $log->details }}
+                                    {{ $log['details'] }}
                                 </td>
                             </tr>
                         @empty

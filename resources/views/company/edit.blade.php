@@ -12,19 +12,30 @@
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-6">
-                        @if ($company->company_image)
-                            <img src="{{ asset('storage/' . $company->company_image) }}" alt="{{ $company->company_name }}" class="h-20 w-20 rounded-md object-contain">
+                        @if (!empty($company['company_image']))
+                            <img src="{{ $company['company_image'] }}" alt="{{ $company['company_name'] }}" class="h-20 w-20 rounded-md object-contain">
                         @endif
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-900">{{ $company->company_name }}</h2>
+                            <h2 class="text-2xl font-bold text-gray-900">{{ $company['company_name'] }}</h2>
                             <p class="mt-1 text-sm text-gray-500">Total users: {{ $totalUsers }}</p>
-                            {{-- Subscription details require a subscription record --}}
-                            @if ($company->subscription)
+
+                            @if (!empty($company['subscription']))
                                 <p class="mt-2 text-sm text-gray-600">
-                                    Status: <span class="font-semibold {{ $company->subscription->is_paid ? 'text-green-600' : 'text-red-600' }}">{{ $company->subscription->is_paid ? 'Paid' : 'Unpaid' }}</span>
+                                    Status:
+                                    <span class="font-semibold {{ $company['subscription']['is_paid'] ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $company['subscription']['is_paid'] ? 'Paid' : 'Unpaid' }}
+                                    </span>
                                 </p>
-                                <p class="text-sm text-gray-600">Subscription Plan: <span class="font-semibold">{{ $company->subscription->subscription_tier }}</span></p>
-                                <p class="text-sm text-gray-600">Next billing cycle: <span class="font-semibold">{{ \Carbon\Carbon::parse($company->subscription->renew_date)->format('F d, Y') }}</span></p>
+                                <p class="text-sm text-gray-600">
+                                    Subscription Plan:
+                                    <span class="font-semibold">{{ $company['subscription']['subscription_tier'] }}</span>
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    Next billing cycle:
+                                    <span class="font-semibold">
+                                        {{ \Carbon\Carbon::parse($company['subscription']['renew_date'])->format('F d, Y') }}
+                                    </span>
+                                </p>
                             @else
                                 <p class="mt-2 text-sm text-gray-600">No active subscription.</p>
                             @endif
@@ -38,13 +49,12 @@
                 </div>
             </div>
 
-
             {{-- Form Section --}}
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     <header>
                         <h2 class="text-lg font-medium text-gray-900">
-                            {{ $company->company_name }}
+                            {{ $company['company_name'] }}
                         </h2>
                         <p class="mt-1 text-sm text-gray-600">
                             Update your company's profile information and email address.
@@ -58,14 +68,14 @@
                         {{-- Company Name --}}
                         <div>
                             <x-input-label for="company_name" :value="__('Company Name')" />
-                            <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full" :value="old('company_name', $company->company_name)" readonly />
+                            <x-text-input id="company_name" name="company_name" type="text" class="mt-1 block w-full" :value="old('company_name', $company['company_name'])" readonly />
                             <x-input-error class="mt-2" :messages="$errors->get('company_name')" />
                         </div>
 
                         {{-- Company Email --}}
                         <div>
                             <x-input-label for="company_email" :value="__('Company Email')" />
-                            <x-text-input id="company_email" name="company_email" type="email" class="mt-1 block w-full" :value="old('company_email', $company->company_email)" required />
+                            <x-text-input id="company_email" name="company_email" type="email" class="mt-1 block w-full" :value="old('company_email', $company['company_email'])" required />
                             <x-input-error class="mt-2" :messages="$errors->get('company_email')" />
                         </div>
 
@@ -73,12 +83,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="company_website" :value="__('Company Website')" />
-                                <x-text-input id="company_website" name="company_website" type="text" class="mt-1 block w-full" :value="old('company_website', $company->company_website)" />
+                                <x-text-input id="company_website" name="company_website" type="text" class="mt-1 block w-full" :value="old('company_website', $company['company_website'])" />
                                 <x-input-error class="mt-2" :messages="$errors->get('company_website')" />
                             </div>
                             <div>
                                 <x-input-label for="company_telephone" :value="__('Company Telephone')" />
-                                <x-text-input id="company_telephone" name="company_telephone" type="text" class="mt-1 block w-full" :value="old('company_telephone', $company->company_telephone)" />
+                                <x-text-input id="company_telephone" name="company_telephone" type="text" class="mt-1 block w-full" :value="old('company_telephone', $company['company_telephone'])" />
                                 <x-input-error class="mt-2" :messages="$errors->get('company_telephone')" />
                             </div>
                         </div>
@@ -86,15 +96,15 @@
                         {{-- Company Address --}}
                         <div>
                             <x-input-label for="company_address" :value="__('Company Address')" />
-                            <textarea id="company_address" name="company_address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">{{ old('company_address', $company->company_address) }}</textarea>
+                            <textarea id="company_address" name="company_address" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">{{ old('company_address', $company['company_address']) }}</textarea>
                             <x-input-error class="mt-2" :messages="$errors->get('company_address')" />
                         </div>
 
                         {{-- Company Logo --}}
                         <div>
                             <x-input-label for="company_image" :value="__('Company Logo')" />
-                            @if ($company->company_image)
-                                <img src="{{ asset('storage/' . $company->company_image) }}" alt="{{ $company->company_name }}" class="h-20 w-auto rounded-md object-contain my-2">
+                            @if (!empty($company['company_image']))
+                                <img src="{{ $company['company_image'] }}" alt="{{ $company['company_name'] }}" class="h-20 w-auto rounded-md object-contain my-2">
                             @endif
                             <input id="company_image" name="company_image" type="file" class="block w-full">
                             <x-input-error class="mt-2" :messages="$errors->get('company_image')" />
@@ -110,7 +120,7 @@
                 </div>
             </div>
 
-            {{-- Danger Zone section --}}
+            {{-- Danger Zone --}}
             @can('deactivate-company')
                 <section class="space-y-6 p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <header>
@@ -130,7 +140,6 @@
                     <x-modal name="confirm-company-deactivation" :show="$errors->userDeletion->isNotEmpty()" focusable>
                         <form method="post" action="{{ route('management.company.deactivate') }}" class="p-6">
                             @csrf
-                            {{-- No @method('delete') needed anymore --}}
 
                             <h2 class="text-lg font-medium text-gray-900">
                                 Are you sure you want to deactivate your company?
@@ -158,5 +167,4 @@
 
         </div>
     </div>
-
 </x-app-layout>
