@@ -33,23 +33,60 @@
                     {{-- Recent Inventory Activity Table --}}
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Inventory Activity</h3>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 ...">Product</th><th class="px-6 py-3 ...">Update</th><th class="px-6 py-3 ...">User</th></tr></thead>
-                                <tbody>
-                                @forelse($dashboardData['recentActivity'] as $log)
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Recent Inventory Activity</h3>
+                                <a href="{{ route('management.logs.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                    View All
+                                </a>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
                                     <tr>
-                                        <td class="px-6 py-4">{{ $log['subject_name'] ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">{{ $log['details'] }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">{{ $log['user_name'] }}</td>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Update</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No recent activity.</td></tr>
-                                @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                    @forelse($dashboardData['recentActivity'] as $log)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <div class="flex items-center">
+                                                    <div class="h-10 w-10 flex-shrink-0">
+                                                        <img class="h-10 w-10 rounded-md object-contain" src="{{ $log['product_image_url'] ?? '...' }}" alt="">
+                                                    </div>
+                                                    <div class="ml-4">{{ $log['subject_name'] ?? 'N/A' }}</div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log['subject_sku'] ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700">{{ $log['detail'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log['current_stock'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                @php
+                                                    $statusColor = match($log['stock_status']) {
+                                                        'In Stock' => 'bg-green-100 text-green-800',
+                                                        'Low Stock' => 'bg-yellow-100 text-yellow-800',
+                                                        'Out of Stock' => 'bg-red-100 text-red-800',
+                                                        default => 'bg-gray-100 text-gray-800',
+                                                    };
+                                                @endphp
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
+                                                    {{ $log['stock_status'] }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No recent product activity.</td></tr>
+                                    @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             @else
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">

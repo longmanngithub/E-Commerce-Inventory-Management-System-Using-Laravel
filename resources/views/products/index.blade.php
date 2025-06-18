@@ -84,6 +84,8 @@
                             </button>
                         </div>
 
+                    </form>
+
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -108,7 +110,7 @@
                                     <tr>
                                         {{-- Checkbox --}}
                                         <td class="px-6 py-4">
-                                            <input type="checkbox" @change="toggleProduct({{ $product['id'] }})" name="product_ids[]" value="{{ $product['id'] }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm">
+                                            <input type="checkbox" name="product_ids[]" value="{{ $product['id'] }}" class="product-checkbox rounded border-gray-300 text-indigo-600 shadow-sm" form="bulk-delete-form">
                                         </td>
 
                                         {{-- Display Product Image --}}
@@ -149,13 +151,9 @@
 
                                         {{-- Status Cell --}}
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <form action="{{ route('products.toggleStatus', $product['id']) }}" method="POST">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['status'] === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                                    {{ $product['status'] }}
-                                                </button>
-                                            </form>
+                                            <a href="{{ route('products.toggleStatus', $product['id']) }}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $product['status'] === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }}">
+                                                {{ $product['status'] }}
+                                            </a>
                                         </td>
 
                                         {{-- Availability status --}}
@@ -177,7 +175,6 @@
                                         {{-- Actions --}}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 
-                                            {{-- NEW: A Flexbox container to align all items --}}
                                             <div class="flex items-center space-x-4">
 
                                                 {{-- The "View" link is available to everyone --}}
@@ -187,17 +184,18 @@
 
                                                 {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
                                                 @if($product['permissions']['update'])
-                                                    <a href="{{ route('products.edit', $product['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                    <a href="{{ route('products.edit', $product['id']) }}?{{ http_build_query(request()->query()) }}" class="text-indigo-600 hover:text-indigo-900">
                                                         Edit
                                                     </a>
                                                 @endif
 
                                                 {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
                                                 @if($product['permissions']['delete'])
-                                                    <button type="button" class="text-red-600 hover:text-red-900"
-                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product['id']) }}')">
-                                                        Delete
-                                                    </button>
+                                                    <form action="{{ route('products.destroy', $product['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                    </form>
                                                 @endif
 
                                             </div>
@@ -215,7 +213,6 @@
 
                         </div>
 
-                    </form>
                     {{-- END OF WRAPPING FORM --}}
 
                     @else
@@ -311,17 +308,18 @@
 
                                                 {{-- Only show the "Edit" link if the user is authorized by the 'update-product' Gate --}}
                                                 @if($product['permissions']['update'])
-                                                    <a href="{{ route('products.edit', $product['id']) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                    <a href="{{ route('products.edit', $product['id']) }}?{{ http_build_query(request()->query()) }}" class="text-indigo-600 hover:text-indigo-900">
                                                         Edit
                                                     </a>
                                                 @endif
 
                                                 {{-- Only show the "Delete" form if the user is authorized by the 'delete-product' Gate --}}
                                                 @if($product['permissions']['delete'])
-                                                    <button type="button" class="text-red-600 hover:text-red-900"
-                                                            onclick="confirmSingleDelete('{{ route('products.destroy', $product['id']) }}')">
-                                                        Delete
-                                                    </button>
+                                                    <form action="{{ route('products.destroy', $product['id']) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                    </form>
                                                 @endif
 
                                             </div>
@@ -339,14 +337,6 @@
                         </div>
                     @endcan
 
-
-                    {{-- A single, hidden form for individual deletions --}}
-                    <form id="single-delete-form" action="" method="POST" style="display: none;">
-                        @csrf
-                        @method('DELETE')
-                    </form>
-
-
                     {{-- Custom Pagination for API responses --}}
                     <div class="mt-4">
                         {{ $products->links() }}
@@ -360,48 +350,37 @@
 
     {{-- Script for both "Select All" and the new single delete function --}}
     @push('scripts')
-        <script>
-            function productManager() {
-                return {
-                    selectedProductIds: [],
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all-checkbox');
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
 
-                    init() {
-                        console.log("Alpine component initialized");
-                    },
-
-                    toggleProduct(productId) {
-                        if (this.selectedProductIds.includes(productId)) {
-                            this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
-                        } else {
-                            this.selectedProductIds.push(productId);
-                        }
-                        console.log('Selected:', this.selectedProductIds);
-                    },
-
-                    bulkDelete() {
-                        console.log('Deleting:', this.selectedProductIds); // should log selected IDs
-
-                        fetch('/api/products/bulk-destroy', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            },
-                            body: JSON.stringify({
-                                product_ids: this.selectedProductIds
-                            })
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-                                alert(data.message);
-                                // reload or update UI here
-                            })
-                            .catch(err => {
-                                console.error('Error deleting:', err);
-                            });
+            function toggleButtonState() {
+                let checkedCount = 0;
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        checkedCount++;
                     }
-                }
+                });
+                bulkDeleteBtn.disabled = checkedCount === 0;
             }
-        </script>
+
+            selectAll.addEventListener('click', function (event) {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = event.target.checked;
+                });
+                toggleButtonState();
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    toggleButtonState();
+                });
+            });
+
+            toggleButtonState(); // Initial check
+        });
+    </script>
     @endpush
 </x-app-layout>

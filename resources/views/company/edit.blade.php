@@ -35,9 +35,11 @@
                             @endif
                         </div>
                         {{-- Change Plan Button --}}
+                        @if(Auth::user()->is_owner)
                         <div>
                             <a href="{{ route('subscription.plans') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 whitespace-nowrap">Change Plan</a>
                         </div>
+                        @endif
                     </header>
 
                     {{-- Check if company data was loaded successfully from the API --}}
@@ -123,7 +125,8 @@
 
 
                 {{-- Deactivate Company "Danger Zone" --}}
-                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+            @if(Auth::user()->is_owner)
+            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-red-600">{{ __('Deactivate Company') }}</h2>
@@ -137,6 +140,7 @@
                         </x-danger-button>
                     </section>
                 </div>
+            @endif
 
                 {{-- This is the new confirmation modal --}}
                 <x-modal name="confirm-company-deactivation" :show="$errors->userDeletion->isNotEmpty()" focusable>

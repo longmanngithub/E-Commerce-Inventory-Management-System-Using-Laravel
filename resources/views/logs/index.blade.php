@@ -1,8 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Audit Logs') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Logs') }}
+            </h2>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -10,133 +12,78 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    {{-- Search and Filter Section --}}
-                    <div class="flex justify-between items-center mb-4">
-                        {{-- Search Form --}}
-                        <form action="{{ route('management.logs.index') }}" method="GET" class="w-1/3">
-                            <div class="flex">
-                                <x-text-input id="search" class="block w-full rounded-none rounded-l-md" type="text" name="search" :value="request('search')" placeholder="Search in log details..." />
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-r-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                                    Search
-                                </button>
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <form action="{{ route('management.logs.index') }}" method="GET">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="search" class="block font-medium text-sm text-gray-700">Search in log details...</label>
+                                    <x-text-input id="search" class="block mt-1 w-full" type="text" name="search" :value="request('search')" />
+                                </div>
+                                <div>
+                                    <label for="action" class="block font-medium text-sm text-gray-700">Action Type</label>
+                                    <select name="action" id="action" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
+                                        <option value="">All Actions</option>
+                                        <option value="Created" @selected(request('action') == 'Created')>Created</option>
+                                        <option value="Updated" @selected(request('action') == 'Updated')>Updated</option>
+                                        <option value="Deleted" @selected(request('action') == 'Deleted')>Deleted</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <x-primary-button>Filter</x-primary-button>
+                                </div>
                             </div>
                         </form>
-
-                        {{-- Filter Button --}}
-                        <a href="#"
-                           x-data
-                           @click.prevent="$dispatch('open-modal', 'filter-logs')"
-                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
-                            <span>Filter</span>
-                        </a>
-
                     </div>
 
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Staff Name
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Action
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Entity
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Timestamp
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Detail
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($logs['data'] ?? [] as $log)
+                    {{-- Audit Log Table --}}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ $log['user']['staff_name'] ?? $log['user']['admin_name'] ?? 'Unknown User' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {{-- This block sets the color class based on the action text --}}
-                                    @php
-                                        $actionColor = match(strtolower($log['action'])) {
-                                            'created' => 'bg-blue-100 text-blue-800',
-                                            'updated' => 'bg-green-100 text-green-800',
-                                            'deleted' => 'bg-red-100 text-red-800',
-                                            'exported' => 'bg-yellow-100 text-yellow-800',
-                                            default => 'bg-gray-100 text-gray-800',
-                                        };
-                                    @endphp
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $actionColor }}">
-                                        {{ $log['action'] }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $log['entity_affected'] }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ \Carbon\Carbon::parse($log['timestamp'])->format('d/m/Y h:i A') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $log['details'] }}
-                                </td>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entity</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detail</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                    No log entries found.
-                                </td>
-                            </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse ($logs as $log)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ $log['userName'] ?? 'System' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @php
+                                            // Color-code the badge based on the action type
+                                            $actionColor = match($log['action']) {
+                                                'Created' => 'bg-green-100 text-green-800',
+                                                'Updated' => 'bg-blue-100 text-blue-800',
+                                                'Deleted' => 'bg-red-100 text-red-800',
+                                                default => 'bg-gray-100 text-gray-800',
+                                            };
+                                        @endphp
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $actionColor }}">
+                                                {{ $log['action'] }}
+                                            </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ $log['entity'] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">{{ \Carbon\Carbon::parse($log['timestamp'])->format('d M Y, h:i A') }}</td>
+                                    <td class="px-6 py-4 text-sm">{{ $log['detail'] }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">No log entries found.</td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
                     {{-- Pagination Links --}}
                     <div class="mt-4">
                         {{ $logs->links() }}
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
-
-    {{-- Filter Modal --}}
-    <x-modal name="filter-logs" focusable>
-        <form action="{{ route('management.logs.index') }}" method="GET" class="p-6">
-            <h2 class="text-lg font-medium text-gray-900">Filter Logs</h2>
-
-            {{-- Filter by Action --}}
-            <div class="mt-6">
-                <h3 class="text-md font-medium text-gray-800">Action</h3>
-                <div class="mt-2 space-y-2">
-                    @foreach(['Created', 'Updated', 'Deleted', 'Exported'] as $action)
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" name="actions[]" value="{{ $action }}" @if(in_array($action, request('actions', []))) checked @endif class="rounded ...">
-                            <span class="ms-2 text-sm text-gray-700">Show {{ strtolower($action) }} only</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Sort By --}}
-            <div class="mt-6">
-                <x-input-label for="sort_by" :value="__('Sort By')" />
-                <select name="sort_by" id="sort_by" class="block mt-1 w-full ...">
-                    <option value="newest" @if(request('sort_by', 'newest') == 'newest') selected @endif>Newest First</option>
-                    <option value="oldest" @if(request('sort_by') == 'oldest') selected @endif>Oldest First</option>
-                </select>
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <a href="{{ route('management.logs.index') }}" class="text-sm ... mr-4">Reset</a>
-                <x-primary-button>
-                    {{ __('Apply') }}
-                </x-primary-button>
-            </div>
-        </form>
-    </x-modal>
-
 </x-app-layout>

@@ -68,8 +68,10 @@
 
                             {{-- Display Total Stock --}}
                             <div>
-                                <x-input-label for="total_stock" :value="__('Total Stock Quantity (Calculated)')" />
-                                <x-text-input id="total_stock" type="number" class="block mt-1 w-full bg-gray-100" value="{{ $product['totalStockQuantity'] }}" readonly />
+                                <x-input-label for="stock_quantity" :value="__('Quantity from Last Purchase (Editable)')" />
+                                <x-text-input id="stock_quantity" name="stock_quantity" type="number" class="block mt-1 w-full"
+                                              :value="old('stock_quantity', $product['totalStockQuantity'] ?? '')" />
+                                <x-input-error :messages="$errors->get('stock_quantity')" class="mt-2" />
                             </div>
 
                             {{-- EDITABLE: Reorder point --}}
@@ -116,7 +118,7 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('products.index') }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">Cancel</a>
+                            <a href="{{ $backUrl }}" class="text-sm text-gray-600 hover:text-gray-900 mr-4">Cancel</a>
                             <x-primary-button>
                                 {{ __('Update Product') }}
                             </x-primary-button>
