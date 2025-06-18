@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; // Use Authenticatable for login
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+
+// Use Authenticatable for login
 
 class PlatformOwner extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
 
     protected $table = 'platform_owner';
@@ -41,6 +45,16 @@ class PlatformOwner extends Authenticatable
     public function getAuthPassword()
     {
         return $this->owner_password;
+    }
+
+    /**
+     * Return password
+     *
+     * @return string
+     */
+    public function getAuthPasswordName()
+    {
+        return 'owner_password';
     }
 
     /**

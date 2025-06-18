@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use App\Notifications\CompanyPasswordResetNotification;
 use Illuminate\Foundation\Auth\User as Authenticatable; // Use Authenticatable for login
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class CompanyAdmin extends Authenticatable
 {
+    use HasApiTokens;
     use Notifiable;
 
     protected $table = 'company_admin';
@@ -46,6 +47,16 @@ class CompanyAdmin extends Authenticatable
     }
 
     /**
+     * Return password
+     *
+     * @return string
+     */
+    public function getAuthPasswordName()
+    {
+        return 'admin_password';
+    }
+
+    /**
      * Get user type
      *
      * @return string
@@ -60,11 +71,6 @@ class CompanyAdmin extends Authenticatable
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');
-    }
-
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new CompanyPasswordResetNotification($token));
     }
 
     /**
