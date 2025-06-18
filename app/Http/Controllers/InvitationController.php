@@ -38,25 +38,22 @@ class InvitationController extends Controller
     {
         $invitationData = $request->session()->get('invitation_data');
         if (!$invitationData) {
-            return redirect()->route('login')->with('error', 'Your session has expired.');
+            return redirect()->route('login')->with('error', 'Your session has expired. Please use the invitation link again.');
         }
 
-        // Call the API to create the user account
+        // Tell the API to create the user
         $response = Http::withHeaders(['Accept' => 'application/json'])
             ->post(config('services.api.url').'/invitations/complete', [
                 'token' => $invitationData['token'],
                 'password' => $request->password,
                 'password_confirmation' => $request->password_confirmation,
             ]);
+
         if ($response->failed()) {
             return back()->withErrors($response->json('errors'))->withInput();
         }
 
-        Auth::guard('company_admin')->logout();
-        Auth::guard('company_staff')->logout();
-
-        // --- Log in the new user via the API ---
-        $invitationData = $request->session()->get('invitation_data');
+        // Now that the user exists, log them in via the API
         $loginResponse = Http::withHeaders(['Accept' => 'application/json'])
             ->post(config('services.api.url').'/auth/login', [
                 'email' => $invitationData['email'],
@@ -64,14 +61,14 @@ class InvitationController extends Controller
             ]);
 
         if ($loginResponse->failed()) {
-            return redirect()->route('login')->with('error', 'Account created, but automatic login failed.');
+            return redirect()->route('login')->with('status', 'Account created! Please log in.');
         }
 
         // Get the user data and guard from the successful login response
         $userData = $loginResponse->json('user');
         $guard = $loginResponse->json('guard');
 
-        // Get the user's ID from the correct key based on their role
+        // Get the user's ID from the correct key based on their role, as defined in your ERD
         $userId = $userData['admin_id'] ?? $userData['staff_id'] ?? null;
 
         if (!$userId) {
@@ -85,10 +82,12 @@ class InvitationController extends Controller
         $user = $userModelClass::find($userId);
 
         if ($user) {
-            Auth::guard($guard)->login($user, true);
+            Auth::guard($guard)->login($user, true); // Log in the new user
             $request->session()->regenerate();
             $request->session()->put('api_token', $loginResponse->json('token'));
             $request->session()->forget('invitation_data');
+
+            // Redirect the NEWLY LOGGED-IN user to their dashboard
             return redirect()->intended(route('dashboard'))->with('status', 'Welcome! Your account has been activated.');
         }
 
