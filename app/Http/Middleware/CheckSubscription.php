@@ -23,7 +23,7 @@ class CheckSubscription
         // Check if the company exists and has an active subscription.
         //    We check for the 'subscription' relationship and if it's marked as 'is_paid'.
         if ($company && $company->subscription && $company->subscription->is_paid) {
-            // 3. If they have a paid subscription, let them proceed to the requested page.
+            // If they have a paid subscription, let them proceed to the requested page.
             return $next($request);
         }
 
