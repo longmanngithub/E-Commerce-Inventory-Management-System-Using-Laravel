@@ -52,7 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'http://192.168.3.18:8000'),
+    'url_frontend' => env('FRONTEND_URL', 'http://192.168.3.18:8001'),
+    'url_backend' => env('BACKEND_URL', 'http://192.168.3.18:8002'),
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +67,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => env('APP_TIMEZONE', 'Asia/Phnom_Penh'),
 
     /*
     |--------------------------------------------------------------------------
