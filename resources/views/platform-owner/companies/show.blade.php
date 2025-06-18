@@ -42,7 +42,7 @@
 
                         {{-- Description --}}
                         <p class="text-sm text-gray-600 pt-2">
-                            {{ $companyData['companyDetails']['description'] ?? 'No description provided.' }}
+                            {{ $companyData['desc'] ?? 'No description provided.' }}
                         </p>
 
                         {{-- Company ID --}}
