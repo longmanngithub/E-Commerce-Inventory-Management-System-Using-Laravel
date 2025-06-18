@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyResource extends JsonResource
 {
@@ -17,14 +18,15 @@ class CompanyResource extends JsonResource
         return [
             'id' => $this->company_id,
             'name' => $this->company_name,
-            'image_url' => $this->company_image ? asset('storage/' . $this->company_image) : null,
             'status' => $this->status,
+            'imageUrl' => $this->company_image ? Storage::disk('public')->url($this->company_image) : null,
             'subscription' => [
                 'plan' => optional($this->subscription)->subscription_tier,
                 'status' => optional($this->subscription)->is_paid ? 'Paid' : 'Unpaid',
-                'next_billing_date' => optional($this->subscription)->renew_date,
+                'nextBillingDate' => optional($this->subscription)->renew_date,
             ],
-            'registered_on' => $this->register_date,
+            'registeredOn' => $this->register_date,
+            'desc' => $this->company_desc,
         ];
     }
 }
