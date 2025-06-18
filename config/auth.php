@@ -14,8 +14,9 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        // We set the default web guard to 'company_admin' for consistency
+        'guard' => 'company_admin',
+        'passwords' => 'users',
     ],
 
     /*
@@ -36,9 +37,24 @@ return [
     */
 
     'guards' => [
-        'web' => [
+        // This is the guard for your front-app and back-app web sessions
+        'company_admin' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'company_admins',
+        ],
+        'company_staff' => [
+            'driver' => 'session',
+            'provider' => 'company_staffs',
+        ],
+        'platform_owner' => [
+            'driver' => 'session',
+            'provider' => 'platform_owners',
+        ],
+
+        // This is the guard for your API, using Sanctum
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => null, // Sanctum will determine the provider automatically
         ],
     ],
 
@@ -60,15 +76,24 @@ return [
     */
 
     'providers' => [
+        // This is the default provider, we can leave it
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\User::class,
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'platform_owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\PlatformOwner::class,
+        ],
+        'company_admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CompanyAdmin::class,
+        ],
+        'company_staffs' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CompanyStaff::class,
+        ],
     ],
 
     /*
