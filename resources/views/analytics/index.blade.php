@@ -119,7 +119,17 @@
                                 @forelse($analyticsData['bestSellingProducts'] as $product)
                                     <tr class="text-sm">
                                         <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $product['name'] }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap"><img src="{{ $product['image_url'] ?? '...' }}" class="h-10 w-10 rounded-md object-contain"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($product['image_url'])
+                                                <div class="h-10 w-10">
+                                                    <img src="{{ $product['image_url'] ?? '...' }}" alt="{{ $product['name'] }}" class="h-full w-full object-contain">
+                                                </div>
+                                            @else
+                                                <div class="h-10 w-10 bg-gray-200 flex items-center justify-center rounded-md">
+                                                    <span class="text-xs text-gray-500">No img</span>
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product['sku'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product['category'] }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product['remaining_quantity'] }}</td>
