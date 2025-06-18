@@ -86,9 +86,12 @@ class ProductController extends Controller
             abort(404, 'Product not found.');
         }
 
+        $backUrl = route('products.index') . '?' . http_build_query($request->query());
+
         return view('products.edit', [
             'product' => $productResponse->json('data'),
-            'categories' => $categoriesResponse->json('data', [])
+            'categories' => $categoriesResponse->json('data', []),
+            'backUrl' => $backUrl,
         ]);
     }
 
@@ -110,7 +113,7 @@ class ProductController extends Controller
             return back()->withErrors($response->json('errors'))->with('error', $response->json('message'))->withInput();
         }
 
-        return redirect()->route('products.index')->with('status', 'Product updated successfully!');
+        return back()->with('status', 'Product updated successfully!');
     }
 
     /**
@@ -120,7 +123,7 @@ class ProductController extends Controller
     {
         $this->api(request())->delete(config('services.api.url').'/products/' . $productId);
 
-        return redirect()->route('products.index')->with('status', 'Product deleted successfully.');
+        return back()->with('status', 'Product deleted successfully.');
     }
 
     /**
@@ -157,28 +160,25 @@ class ProductController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        // Authorize the action on the front-app side first.
-        $this->authorize('bulk-delete-products', \App\Models\Product::class);
+        // We can still authorize on the front-app side as a first line of defense
+        $this->authorize('bulk-delete-products', Product::class);
 
-        // Validate that the product_ids are present.
         $request->validate([
-            'product_ids' => 'required|array'
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'integer|exists:product,product_id',
         ]);
 
-        // Get the token and send the array of IDs to the API.
-        $token = $request->session()->get('api_token');
-        $response = Http::withToken($token)
-            ->withHeaders(['Accept' => 'application/json'])
+        // Get the token and send the array of IDs to the API
+        $response = $this->api($request)
             ->post(config('services.api.url').'/products/bulk-delete', [
                 'product_ids' => $request->product_ids,
             ]);
 
         if ($response->failed()) {
-//            dd($response->json(), $response->status());
-            return redirect()->route('products.index')->with('error', 'An error occurred while deleting products.');
+            return redirect()->route('products.index')->with('error', $response->json('message', 'An error occurred while deleting products.'));
         }
 
-        return redirect()->route('products.index')->with('status', 'Selected products have been deleted successfully!');
+        return back()->with('status', 'Selected products have been deleted successfully!');
     }
 
     /**
@@ -188,6 +188,6 @@ class ProductController extends Controller
     {
         $this->api(request())->patch(config('services.api.url').'/products/' . $productId . '/toggle-status');
 
-        return redirect()->route('products.index')->with('status', 'Product status updated.');
+        return back()->with('status', 'Product status updated.');
     }
 }

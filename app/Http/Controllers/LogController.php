@@ -26,29 +26,17 @@ class LogController extends Controller
      */
     public function index(Request $request)
     {
-        $url = config('services.api.url') . '/logs';
-
-        // Pass along all filters from request (search, sort_by, actions, etc.)
-        $response = $this->api($request)->get($url, $request->query());
-
-        // Check for failed response
-        if (!$response->successful()) {
-            abort($response->status(), 'Failed to fetch audit logs from API.');
-        }
-
-        $payload = $response->json();
+        $response = $this->api($request)->get(config('services.api.url').'/logs', $request->query());
+        $apiData = $response->json();
 
         $logs = new LengthAwarePaginator(
-            $payload['data'] ?? [],
-            $payload['meta']['total'] ?? 0,
-            $payload['meta']['per_page'] ?? 10,
-            $payload['meta']['current_page'] ?? 1,
-            [
-                'path'  => $request->url(),
-                'query' => $request->query(),
-            ]
+            $apiData['data'] ?? [],
+                $apiData['meta']['total'] ?? 0,
+                $apiData['meta']['per_page'] ?? 15,
+            $apiData['meta']['current_page'] ?? 1,
+            ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        return view('logs.index', ['logs' => $logs]);
+        return view('logs.index', compact('logs'));
     }
 }
