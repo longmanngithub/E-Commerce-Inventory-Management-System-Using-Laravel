@@ -45,13 +45,13 @@ Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])-
 
         // Products view
         Route::resource('products', ProductController::class);
-        Route::delete('/products', [ProductController::class, 'bulkDestroy'])->name('products.bulkDestroy');
-        Route::get('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
+        Route::post('/products/bulk-delete', [ProductController::class, 'bulkDestroy'])->name('products.bulkDestroy');
+        Route::get('/products/{productId}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
 
         // Orders view
         Route::resource('orders', OrderController::class);
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-        Route::get('/orders/{order}/export', [OrderController::class, 'exportCsv'])->name('orders.export');
+        Route::get('/orders/{orderId}/export', [OrderController::class, 'exportCsv'])->name('orders.export');
 
         Route::get('/analytics-report', [AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/analytics-report/export', [AnalyticsController::class, 'exportCsv'])->name('analytics.export');
@@ -75,16 +75,15 @@ Route::middleware(['auth:company_admin', 'subscribed', 'check.company.status'])-
 
     // Users view
     Route::get('/users', [CompanyUserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [CompanyUserController::class, 'create'])->name('users.create');
-    Route::post('/users', [CompanyUserController::class, 'store'])->name('users.store');
+    Route::get('/users/invite', [CompanyUserController::class, 'create'])->name('users.create');
+    Route::post('/users/invite', [CompanyUserController::class, 'store'])->name('users.store');
 
     // Staff Edit/Delete
-    Route::get('/staff/{id}/edit', [CompanyUserController::class, 'editStaff'])->name('users.edit.staff');
-    Route::put('/staff/{id}', [CompanyUserController::class, 'updateStaff'])->name('users.update.staff');
-    Route::delete('/staff/{id}', [CompanyUserController::class, 'destroyStaff'])->name('users.destroy.staff');
+    Route::put('/users/staff/{userId}', [CompanyUserController::class, 'updateStaff'])->name('users.update.staff');
+    Route::delete('/users/staff/{userId}', [CompanyUserController::class, 'destroyStaff'])->name('users.destroy.staff');
 
     // Admin Delete
-    Route::delete('/admins/{id}', [CompanyUserController::class, 'destroyAdmin'])->name('users.destroy.admin');
+    Route::delete('/users/admin/{userId}', [CompanyUserController::class, 'destroyAdmin'])->name('users.destroy.admin');
 
     // Logs view
     Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
