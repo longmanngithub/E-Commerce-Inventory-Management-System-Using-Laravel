@@ -7,7 +7,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // --- PLATFORM OWNER AUTHENTICATION ---
@@ -22,6 +22,7 @@ Route::middleware('auth:platform_owner')->group(function() {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('owner.profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('owner.profile.update');
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('owner.password.update');
+    Route::patch('/profile/photo', [\App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('owner.profile.updatePhoto');
 
     // Company view
     Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('company.show');
