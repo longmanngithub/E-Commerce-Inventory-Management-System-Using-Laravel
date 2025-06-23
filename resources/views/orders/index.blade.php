@@ -147,8 +147,8 @@
     </div>
 
     {{-- Filter Modal --}}
-    <div id="filterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50 hidden opacity-0 transition-opacity duration-300">
-        <div id="filterModalContent" class="relative top-20 mx-auto p-0 border-0 w-96 shadow-2xl rounded-2xl bg-white dark:bg-gray-800 transform scale-95 transition-transform duration-300">
+    <div id="filterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center">
+        <div id="filterModalContent" class="relative mx-auto p-0 border-0 w-96 shadow-2xl rounded-2xl bg-white dark:bg-gray-800 transform scale-95 transition-transform duration-300 my-8">
             {{-- Header --}}
             <div class="flex items-center justify-between p-6 pb-4">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Filter</h3>

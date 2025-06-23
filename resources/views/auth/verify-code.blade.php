@@ -1,10 +1,41 @@
 <x-guest-layout>
-    <div class="mb-4 text-center">
-        <h1 class="text-2xl font-bold">Enter Verification Code</h1>
-        <p class="text-sm text-gray-600">
-            {{-- We use session('email') because we were redirected here from the previous step --}}
-            We have sent a verification code to {{ session('email') }}.
-        </p>
+    <style>
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 40px;
+            transition: color 0.2s ease;
+        }
+
+        .back-button:hover {
+            color: #1f2937;
+        }
+
+        .back-arrow {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+    </style>
+
+
+    <!-- Back Button -->
+    <a href="{{ url()->previous() }}" class="back-button dark:text-white">
+        <svg class="dark:text-white back-arrow" viewBox="0 0 24 24">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back
+    </a>
+
+    <h1 class="dark:text-gray-200 text-4xl font-black">Enter Verification Code</h1>
+    <div class="mb-8 mt-3 text-lg text-gray-600 dark:text-gray-400">
+        {{ __('We have sent a verification code to') }} {{ session('email') }}{{ __('.') }}
     </div>
 
     <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -43,7 +74,7 @@
             @for ($i = 0; $i < 6; $i++)
                 <input  type="text"
                         x-ref="code-input-{{ $i + 1 }}"
-                        class="w-12 h-12 text-center text-lg font-semibold border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        class="w-full h-full p-6 text-center text-2xl dark:bg-gray-900 dark:text-white font-semibold border-gray-300 focus:border-blue-600 focus:ring-blue-600 rounded-lg shadow-sm"
                         maxlength="1"
                         x-model="code[{{ $i }}]"
                         @input.debounce="handleInput({{ $i + 1 }}, $event)">
@@ -52,10 +83,11 @@
         <x-input-error :messages="$errors->get('code')" class="mt-2 text-center" />
 
 
-        <div class="flex items-center justify-center mt-6">
-            <x-primary-button>
-                {{ __('Verify') }}
-            </x-primary-button>
+        <div class="flex mt-12">
+            <button type="submit"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-xl transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                Verify
+            </button>
         </div>
     </form>
 </x-guest-layout>

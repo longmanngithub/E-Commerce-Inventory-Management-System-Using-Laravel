@@ -15,8 +15,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased overflow-hidden">
-<!-- Global Alpine.js state for navigation -->
-<div x-data="{
+    <!-- Global Alpine.js state for navigation -->
+    <div x-data="{
             sidebarOpen: window.innerWidth >= 1024,
             toggleSidebar() {
                 this.sidebarOpen = !this.sidebarOpen;

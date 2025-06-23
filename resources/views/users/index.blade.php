@@ -316,7 +316,7 @@
                             class="w-full px-4 py-4 text-blue-600 dark:text-blue-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 border-b border-gray-200 dark:border-gray-700 hover:scale-105 transform">
                         Cancel
                     </button>
-                    <form :action="user.type === 'admin' ? '/management/users/destroy/admin/' + user.id : '/management/users/destroy/staff/' + user.id"
+                    <form :action="user.type === 'admin' ? '/management/users/admin/' + user.id : '/management/users/staff/' + user.id"
                           method="POST"
                           class="w-full">
                         @csrf
