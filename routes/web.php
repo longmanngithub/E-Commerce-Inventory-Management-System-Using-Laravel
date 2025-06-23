@@ -21,7 +21,7 @@ use App\Http\Controllers\Auth\PlatformOwnerPasswordResetController;
 
 // --- HOMEPAGE ---
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // --- INVITATION ACCEPTANCE (PUBLIC) ---
@@ -42,6 +42,7 @@ Route::middleware(['auth:company_admin,company_staff', 'check.company.status'])-
         Route::patch('/profile', [ProfileController::class, 'update'])->name('admin.profile.update');
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('admin.password.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('admin.profile.destroy');
+        Route::patch('/profile/photo', [\App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('admin.profile.updatePhoto');
 
         // Products view
         Route::resource('products', ProductController::class);
