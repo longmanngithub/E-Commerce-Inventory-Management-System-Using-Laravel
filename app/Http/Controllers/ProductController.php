@@ -152,6 +152,7 @@ class ProductController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+
         return view('products.show', [
             'product' => $productData,
             'purchases' => $purchases,

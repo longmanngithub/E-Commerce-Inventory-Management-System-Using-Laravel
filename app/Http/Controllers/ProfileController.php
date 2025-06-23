@@ -115,4 +115,23 @@ class ProfileController extends Controller
 
         return redirect('/')->with('status', 'Your account has been successfully deleted.');
     }
+
+    /**
+     * Update the user's profile photo by calling the API.
+     */
+    public function updatePhoto(Request $request)
+    {
+        $request->validate(['profile_picture' => 'required|image']);
+        $token = $request->session()->get('api_token');
+
+        $response = Http::withToken($token)
+            ->attach('profile_picture', file_get_contents($request->file('profile_picture')), $request->file('profile_picture')->getClientOriginalName())
+            ->post(config('services.api.url').'/user/photo');
+
+        if ($response->failed()) {
+            return back()->withErrors($response->json('errors'));
+        }
+
+        return redirect()->route('admin.profile.edit')->with('status', 'photo-updated');
+    }
 }

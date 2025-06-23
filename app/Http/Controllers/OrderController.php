@@ -61,6 +61,7 @@ class OrderController extends Controller
         $response = $this->api($request)->post(config('services.api.url')."/orders/{$orderId}/cancel");
 
         if ($response->failed()) {
+            dd($response->json());
             return back()->with('error', $response->json('message', 'Failed to cancel order.'));
         }
 
