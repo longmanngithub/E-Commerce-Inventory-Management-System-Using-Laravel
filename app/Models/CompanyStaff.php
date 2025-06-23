@@ -92,7 +92,44 @@ class CompanyStaff extends Authenticatable
         return $this->morphMany(AuditLog::class, 'user');
     }
 
-    public function getNameAttribute() {
-        return $this->admin_name;
+    /**
+     * Get the user's role.
+     */
+    public function getRoleAttribute(): string
+    {
+        return 'Staff';
+    }
+
+    /**
+     * Get the correct column name for the profile image.
+     */
+    public function getImageUrlColumn(): string
+    {
+        // Return the specific column name for each model
+        if ($this instanceof \App\Models\PlatformOwner) return 'owner_image';
+        if ($this instanceof \App\Models\CompanyAdmin) return 'admin_image';
+        if ($this instanceof \App\Models\CompanyStaff) return 'staff_image';
+        return 'default_image_column'; // Fallback
+    }
+
+    /**
+     * Get the URL for the user's profile picture.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        $imageColumn = $this->getImageUrlColumn();
+
+        if ($this->{$imageColumn}) {
+            $userType = match (get_class($this)) {
+                \App\Models\PlatformOwner::class => 'owner',
+                \App\Models\CompanyAdmin::class => 'admin',
+                \App\Models\CompanyStaff::class => 'staff',
+                default => 'unknown',
+            };
+
+            return config('services.api.url') . "/users/{$userType}/{$this->getKey()}/photo";
+        }
+
+        return null;
     }
 }
