@@ -17,12 +17,22 @@ use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Models\CompanyAdmin;
+use App\Models\CompanyStaff;
+use App\Models\PlatformOwner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/user', function (Request $request) {
 //    return $request->user();
 //})->middleware('auth:sanctum');
+
+//Route::bind('user', function ($value) {
+//    // Sequentially check each user table for the given ID.
+//    return PlatformOwner::find($value)
+//        ?? CompanyAdmin::find($value)
+//        ?? CompanyStaff::find($value);
+//});
 
 // --- PUBLIC ROUTES ---
 
@@ -44,9 +54,12 @@ Route::get('/plans', [PlanController::class, 'index']);
 Route::get('/invitations/{token}', [InvitationController::class, 'show']);
 Route::post('/invitations/complete', [InvitationController::class, 'complete']);
 
+// Profile picture
+Route::get('/users/{userType}/{userId}/photo', [\App\Http\Controllers\Api\ProfileController::class, 'showPhoto'])->name('api.users.photo');
+
 
 // Routes that require an API token to access
-Route::middleware(['auth:sanctum', 'company.valid'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 
     // UNIVERSAL logout
     Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -56,11 +69,13 @@ Route::middleware(['auth:sanctum', 'company.valid'])->group(function () {
     Route::post('/user/profile-information', [ProfileController::class, 'update']);
     Route::put('/user/password', [ProfileController::class, 'updatePassword']);
     Route::delete('/user', [ProfileController::class, 'destroy']);
+    Route::post('/user/photo', [ProfileController::class, 'updatePhoto']);
+
+    // Subscription
+    Route::post('/subscriptions', [SubscriptionController::class, 'store']);
 
     // --- COMPANY API ROUTES ---
     Route::middleware('company.valid')->group(function () {
-        // Subscription
-        Route::post('/subscriptions', [SubscriptionController::class, 'store']);
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
