@@ -182,12 +182,93 @@
                         </div>
                     </div>
 
+                    {{-- Custom Delete Modal --}}
+                    <div id="delete-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-95 opacity-0" id="delete-modal-content">
+                            {{-- Modal Header --}}
+                            <div class="px-6 pt-6 text-center">
+                                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delete product</h2>
+                            </div>
+
+                            {{-- Modal Body --}}
+                            <div class="px-6 py-4 text-center">
+                                <p class="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+                                    Are you sure you want to delete this product? This action cannot be undone.
+                                </p>
+                            </div>
+
+                            {{-- Modal Footer --}}
+                            <div class="px-2 pb-1">
+                                <div class="space-y-1">
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-2">
+                                    <div class="pt-1">
+                                        <button type="button" id="cancel-delete"
+                                                class="w-full px-4 py-3 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-lg text-center transition-colors duration-200">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-2">
+                                    <div class="pt-1">
+                                        <button type="button" id="confirm-delete"
+                                                class="w-full px-4 py-3 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold text-lg text-center transition-colors duration-200">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Custom Bulk Delete Modal --}}
+                    <div id="bulk-delete-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0" id="bulk-delete-modal-content">
+                            {{-- Modal Header --}}
+                            <div class="px-6 pt-6">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delete products</h2>
+                                    <button type="button" id="close-bulk-delete-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Modal Body --}}
+                            <div class="px-6 py-4">
+                                <p class="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
+                                    Are you sure you want to delete <span id="selected-count" class="font-medium text-gray-900 dark:text-white">0</span> selected products? This action cannot be undone.
+                                </p>
+                            </div>
+
+                            {{-- Modal Footer --}}
+                            <div class="px-6 pb-6">
+                                <div class="space-y-3">
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-6">
+                                    <div class="pt-3">
+                                        <button type="button" id="cancel-bulk-delete"
+                                                class="w-full px-4 py-3 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-center transition-colors duration-200">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-6">
+                                    <div class="pt-3">
+                                        <button type="button" id="confirm-bulk-delete"
+                                                class="w-full px-4 py-3 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium text-center transition-colors duration-200">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Add Product Overlay --}}
                     @include('products/create')
 
                     {{-- Bulk Delete Form (Hidden) --}}
                     @can('bulk-delete-products')
-                        <form id="bulk-delete-form" action="{{ route('products.bulkDestroy') }}" method="POST" class="hidden" onsubmit="return confirm('Are you sure you want to delete all selected products? This action cannot be undone.');">
+                        <form id="bulk-delete-form" action="{{ route('products.bulkDestroy') }}" method="POST" class="hidden">
                             @csrf
                         </form>
                     @endcan
@@ -310,17 +391,13 @@
 
                                             {{-- Delete --}}
                                             @if($product['permissions']['delete'])
-                                                <form action="{{ route('products.destroy', $product['id']) }}" method="POST"
-                                                      onsubmit="return confirm('Are you sure you want to delete this product?');"
-                                                      class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="p-2 text-white hover:text-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 bg-red-600 rounded-lg">
-                                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                        </svg>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="delete-product-btn p-2 text-white hover:text-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 bg-red-600 rounded-lg"
+                                                        data-product-id="{{ $product['id'] }}"
+                                                        data-product-name="{{ $product['name'] }}">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
@@ -381,6 +458,16 @@
                 opacity: 1;
             }
 
+            /* Delete Modal Animation */
+            .delete-modal-show {
+                opacity: 1;
+            }
+            .delete-modal-show #delete-modal-content,
+            .delete-modal-show #bulk-delete-modal-content {
+                transform: scale(1);
+                opacity: 1;
+            }
+
             /* Add Product Overlay Animation */
             .overlay-open {
                 transform: translateX(0) !important;
@@ -395,6 +482,22 @@
                 const modalContent = document.getElementById('modal-content');
                 const closeModal = document.getElementById('close-modal');
                 const resetFilters = document.getElementById('reset-filters');
+
+                // Delete Modal elements
+                const deleteModal = document.getElementById('delete-modal');
+                const deleteModalContent = document.getElementById('delete-modal-content');
+                const closeDeleteModal = document.getElementById('close-delete-modal');
+                const cancelDelete = document.getElementById('cancel-delete');
+                const confirmDelete = document.getElementById('confirm-delete');
+                let currentDeleteForm = null;
+
+                // Bulk Delete Modal elements
+                const bulkDeleteModal = document.getElementById('bulk-delete-modal');
+                const bulkDeleteModalContent = document.getElementById('bulk-delete-modal-content');
+                const closeBulkDeleteModal = document.getElementById('close-bulk-delete-modal');
+                const cancelBulkDelete = document.getElementById('cancel-bulk-delete');
+                const confirmBulkDelete = document.getElementById('confirm-bulk-delete');
+                const selectedCount = document.getElementById('selected-count');
 
                 // Add Product Overlay elements
                 const addProductBtn = document.getElementById('add-product-btn');
@@ -417,6 +520,115 @@
 
                 // Search functionality
                 const searchInput = document.querySelector('input[name="search"]');
+
+                // Delete Modal Functions
+                function openDeleteModal() {
+                    deleteModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+
+                    setTimeout(() => {
+                        deleteModal.classList.add('delete-modal-show');
+                    }, 10);
+                }
+
+                function closeDeleteModalFunction() {
+                    deleteModal.classList.remove('delete-modal-show');
+
+                    setTimeout(() => {
+                        deleteModal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                        currentDeleteForm = null;
+                    }, 300);
+                }
+
+                // Bulk Delete Modal Functions
+                function openBulkDeleteModal(count) {
+                    selectedCount.textContent = count;
+                    bulkDeleteModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+
+                    setTimeout(() => {
+                        bulkDeleteModal.classList.add('delete-modal-show');
+                    }, 10);
+                }
+
+                function closeBulkDeleteModalFunction() {
+                    bulkDeleteModal.classList.remove('delete-modal-show');
+
+                    setTimeout(() => {
+                        bulkDeleteModal.classList.add('hidden');
+                        document.body.style.overflow = 'auto';
+                    }, 300);
+                }
+
+                // Delete Product Button Event Listeners
+                document.querySelectorAll('.delete-product-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const productId = this.getAttribute('data-product-id');
+
+                        // Create a form dynamically for deletion
+                        currentDeleteForm = document.createElement('form');
+                        currentDeleteForm.action = `/products/${productId}`;
+                        currentDeleteForm.method = 'POST';
+                        currentDeleteForm.style.display = 'none';
+
+                        // Add CSRF token
+                        const csrfToken = document.createElement('input');
+                        csrfToken.type = 'hidden';
+                        csrfToken.name = '_token';
+                        csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                        // Add DELETE method
+                        const methodField = document.createElement('input');
+                        methodField.type = 'hidden';
+                        methodField.name = '_method';
+                        methodField.value = 'DELETE';
+
+                        currentDeleteForm.appendChild(csrfToken);
+                        currentDeleteForm.appendChild(methodField);
+                        document.body.appendChild(currentDeleteForm);
+
+                        openDeleteModal();
+                    });
+                });
+
+                // Delete Modal Event Listeners
+                if (closeDeleteModal) closeDeleteModal.addEventListener('click', closeDeleteModalFunction);
+                if (cancelDelete) cancelDelete.addEventListener('click', closeDeleteModalFunction);
+
+                if (confirmDelete) {
+                    confirmDelete.addEventListener('click', function() {
+                        if (currentDeleteForm) {
+                            currentDeleteForm.submit();
+                        }
+                        closeDeleteModalFunction();
+                    });
+                }
+
+                // Close delete modal when clicking outside
+                deleteModal.addEventListener('click', function(e) {
+                    if (e.target === deleteModal) {
+                        closeDeleteModalFunction();
+                    }
+                });
+
+                // Bulk Delete Modal Event Listeners
+                if (closeBulkDeleteModal) closeBulkDeleteModal.addEventListener('click', closeBulkDeleteModalFunction);
+                if (cancelBulkDelete) cancelBulkDelete.addEventListener('click', closeBulkDeleteModalFunction);
+
+                if (confirmBulkDelete) {
+                    confirmBulkDelete.addEventListener('click', function() {
+                        document.getElementById('bulk-delete-form').submit();
+                        closeBulkDeleteModalFunction();
+                    });
+                }
+
+                // Close bulk delete modal when clicking outside
+                bulkDeleteModal.addEventListener('click', function(e) {
+                    if (e.target === bulkDeleteModal) {
+                        closeBulkDeleteModalFunction();
+                    }
+                });
 
                 // Add Product Overlay functionality
                 if (addProductBtn && addProductOverlay) {
@@ -688,6 +900,7 @@
                             }
                         });
                         bulkDeleteBtn.disabled = checkedCount === 0;
+                        return checkedCount;
                     }
 
                     selectAll.addEventListener('click', function (event) {
@@ -703,15 +916,27 @@
                         });
                     });
 
-                    // Bulk delete button click
+                    // Bulk delete button click - now opens custom modal
                     bulkDeleteBtn.addEventListener('click', function() {
-                        if (confirm('Are you sure you want to delete all selected products? This action cannot be undone.')) {
-                            document.getElementById('bulk-delete-form').submit();
+                        const count = toggleButtonState();
+                        if (count > 0) {
+                            openBulkDeleteModal(count);
                         }
                     });
 
                     toggleButtonState(); // Initial check
                 }
+
+                // Close modals with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        if (!deleteModal.classList.contains('hidden')) {
+                            closeDeleteModalFunction();
+                        } else if (!bulkDeleteModal.classList.contains('hidden')) {
+                            closeBulkDeleteModalFunction();
+                        }
+                    }
+                });
             });
         </script>
     @endpush
