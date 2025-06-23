@@ -1,257 +1,99 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav class="h-full flex flex-col bg-white dark:bg-gray-800">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                    </a>
-                </div>
-
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    {{-- Dashboard view --}}
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-
-                    {{-- Products view --}}
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                        {{ __('Products') }}
-                    </x-nav-link>
-
-                    {{-- Orders view --}}
-                    <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
-                        {{ __('Orders') }}
-                    </x-nav-link>
-
-                    {{-- ADMIN ONLY --}}
-                    @if(Auth::guard('company_admin')->check())
-
-                        {{-- Users view --}}
-                        <x-nav-link :href="route('management.users.index')" :active="request()->routeIs('management.users.*')">
-                            {{ __('Users') }}
-                        </x-nav-link>
-
-                        {{-- Company view --}}
-                        <x-nav-link :href="route('management.company.edit')" :active="request()->routeIs('management.company.*')">
-                            {{ __('Company') }}
-                        </x-nav-link>
-
-                        {{-- Logs view --}}
-                        <x-nav-link :href="route('management.logs.index')" :active="request()->routeIs('management.logs.*')">
-                            {{ __('Logs') }}
-                        </x-nav-link>
-
-                    @endif
-
-                    {{-- Analytics Report view --}}
-                    <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('admin.analytics.index')">
-                        {{ __('Analytics Report') }}
-                    </x-nav-link>
-
-                </div>
-            </div>
-
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-
-                {{-- Notification --}}
-                <div x-data="{
-                        open: false,
-                        notifications: [],
-                        unreadCount: 0,
-                        fetchNotifications() {
-                            fetch('{{ config('services.api.url') }}/notifications', {
-                                headers: { 'Authorization': 'Bearer ' + '{{ session('api_token') }}', 'Accept': 'application/json' }
-                            })
-                            .then(res => res.json())
-                            .then(data => { this.notifications = data; this.unreadCount = data.length; });
-                        },
-                        markAsRead(notificationId) {
-                            // THE FIX: Ensure the Authorization header is present in this API call
-                            fetch('{{ config('services.api.url') }}/notifications/' + notificationId + '/mark-as-read', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': 'Bearer ' + '{{ session('api_token') }}',
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                            });
-
-                            // This part correctly removes the notification from the UI instantly
-                            this.notifications = this.notifications.filter(n => n.id !== notificationId);
-                            this.unreadCount--;
-                        }
-                     }"
-                                     x-init="fetchNotifications(); setInterval(() => fetchNotifications(), 30000)"
-                                     class="relative">
-
-                    {{-- Bell Icon with unread count badge --}}
-                    <button @click="open = !open" class="relative p-2 ...">
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 50 50">
-                            <path d="M 25 0 C 22.800781 0 21 1.800781 21 4 C 21 4.515625 21.101563 5.015625 21.28125 5.46875 C 15.65625 6.929688 12 11.816406 12 18 C 12 25.832031 10.078125 29.398438 8.25 31.40625 C 7.335938 32.410156 6.433594 33.019531 5.65625 33.59375 C 5.265625 33.878906 4.910156 34.164063 4.59375 34.53125 C 4.277344 34.898438 4 35.421875 4 36 C 4 37.375 4.84375 38.542969 6.03125 39.3125 C 7.21875 40.082031 8.777344 40.578125 10.65625 40.96875 C 13.09375 41.472656 16.101563 41.738281 19.40625 41.875 C 19.15625 42.539063 19 43.253906 19 44 C 19 47.300781 21.699219 50 25 50 C 28.300781 50 31 47.300781 31 44 C 31 43.25 30.847656 42.535156 30.59375 41.875 C 33.898438 41.738281 36.90625 41.472656 39.34375 40.96875 C 41.222656 40.578125 42.78125 40.082031 43.96875 39.3125 C 45.15625 38.542969 46 37.375 46 36 C 46 35.421875 45.722656 34.898438 45.40625 34.53125 C 45.089844 34.164063 44.734375 33.878906 44.34375 33.59375 C 43.566406 33.019531 42.664063 32.410156 41.75 31.40625 C 39.921875 29.398438 38 25.832031 38 18 C 38 11.820313 34.335938 6.9375 28.71875 5.46875 C 28.898438 5.015625 29 4.515625 29 4 C 29 1.800781 27.199219 0 25 0 Z M 25 2 C 26.117188 2 27 2.882813 27 4 C 27 5.117188 26.117188 6 25 6 C 23.882813 6 23 5.117188 23 4 C 23 2.882813 23.882813 2 25 2 Z M 27.34375 7.1875 C 32.675781 8.136719 36 12.257813 36 18 C 36 26.167969 38.078125 30.363281 40.25 32.75 C 41.335938 33.941406 42.433594 34.6875 43.15625 35.21875 C 43.515625 35.484375 43.785156 35.707031 43.90625 35.84375 C 44.027344 35.980469 44 35.96875 44 36 C 44 36.625 43.710938 37.082031 42.875 37.625 C 42.039063 38.167969 40.679688 38.671875 38.9375 39.03125 C 35.453125 39.753906 30.492188 40 25 40 C 19.507813 40 14.546875 39.753906 11.0625 39.03125 C 9.320313 38.671875 7.960938 38.167969 7.125 37.625 C 6.289063 37.082031 6 36.625 6 36 C 6 35.96875 5.972656 35.980469 6.09375 35.84375 C 6.214844 35.707031 6.484375 35.484375 6.84375 35.21875 C 7.566406 34.6875 8.664063 33.941406 9.75 32.75 C 11.921875 30.363281 14 26.167969 14 18 C 14 12.261719 17.328125 8.171875 22.65625 7.21875 C 23.320313 7.707031 24.121094 8 25 8 C 25.886719 8 26.679688 7.683594 27.34375 7.1875 Z M 21.5625 41.9375 C 22.683594 41.960938 23.824219 42 25 42 C 26.175781 42 27.316406 41.960938 28.4375 41.9375 C 28.792969 42.539063 29 43.25 29 44 C 29 46.222656 27.222656 48 25 48 C 22.777344 48 21 46.222656 21 44 C 21 43.242188 21.199219 42.539063 21.5625 41.9375 Z"></path>
-                        </svg>
-                        <span x-show="unreadCount > 0" class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" x-text="unreadCount"></span>
-                    </button>
-
-                    {{-- Dropdown Menu --}}
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ...">
-                        <div class="p-2 font-bold text-sm">Notifications</div>
-                        <div class="border-t">
-                            {{-- Loop through notifications --}}
-                            <template x-for="notification in notifications" :key="notification.id">
-                                <div class="flex items-center justify-between p-2 hover:bg-gray-100">
-                                    <a href="'{{ url('/') }}' + notification.data.link" class="text-sm text-gray-700" x-text="notification.data.message"></a>
-                                    {{-- Mark as Read Button --}}
-                                    <button @click="markAsRead(notification.id)" title="Mark as read" class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </template>
-                            <div x-show="unreadCount === 0" class="p-4 text-sm text-gray-500 text-center">No new notifications</div>
-                        </div>
+    <div class="flex-1 flex flex-col lg:px-2">
+        <div class="flex-1 flex flex-col min-h-0">
+            <!-- Logo -->
+            <div class="shrink-0 flex items-center my-10 px-6">
+                <a href="{{ route('dashboard') }}">
+                    <div class="flex">
+                        <svg version="1.1" id="Layer_1" class="h-9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                             viewBox="0 0 512 512" xml:space="preserve">
+                            <polygon style="fill:#83C9FF;" points="512,178.087 512,100.174 478.609,100.174 478.609,33.391 445.217,33.391 445.217,0 66.783,0
+                                66.783,33.391 33.391,33.391 33.391,100.174 0,100.174 0,178.087 33.391,178.087 33.391,445.217 0,445.217 0,512 512,512
+                                512,445.217 478.609,445.217 478.609,178.087 "/>
+                                                        <polygon style="fill:#FB0023;" points="478.609,100.174 478.609,33.391 445.217,33.391 445.217,0 66.783,0 66.783,33.391
+                                33.391,33.391 33.391,100.174 0,100.174 0,178.087 33.391,178.087 33.391,211.478 89.043,211.478 89.043,178.087 122.435,178.087
+                                122.435,211.478 189.217,211.478 189.217,178.087 222.609,178.087 222.609,211.478 289.391,211.478 289.391,178.087
+                                322.783,178.087 322.783,211.478 389.565,211.478 389.565,178.087 422.957,178.087 422.957,211.478 478.609,211.478
+                                478.609,178.087 512,178.087 512,100.174 "/>
+                                                        <g>
+                                                            <rect x="122.435" style="fill:#FFFFFF;" width="66.783" height="211.478"/>
+                                                            <rect x="322.783" style="fill:#FFFFFF;" width="66.783" height="211.478"/>
+                                                        </g>
+                                                        <g>
+                                                            <rect x="100.174" y="244.87" style="fill:#00479B;" width="100.174" height="200.348"/>
+                                                            <rect x="233.739" y="244.87" style="fill:#00479B;" width="178.087" height="122.435"/>
+                                                        </g>
+                                                        <polygon style="fill:#787680;" points="478.609,445.217 478.609,411.826 33.391,411.826 33.391,445.217 0,445.217 0,512 512,512
+                                512,445.217 "/>
+                                                        <rect y="100.174" width="33.391" height="77.913"/>
+                                                        <rect x="89.043" y="133.565" width="33.391" height="44.522"/>
+                                                        <rect x="122.435" y="178.087" width="66.783" height="33.391"/>
+                                                        <rect x="289.391" y="133.565" width="33.391" height="44.522"/>
+                                                        <rect x="189.217" y="133.565" width="33.391" height="44.522"/>
+                                                        <rect x="322.783" y="178.087" width="66.783" height="33.391"/>
+                                                        <rect x="222.609" y="178.087" width="66.783" height="33.391"/>
+                                                        <rect x="389.565" y="133.565" width="33.391" height="44.522"/>
+                                                        <rect x="478.609" y="100.174" width="33.391" height="77.913"/>
+                                                        <rect x="33.391" y="33.391" width="33.391" height="66.783"/>
+                                                        <rect x="445.217" y="33.391" width="33.391" height="66.783"/>
+                                                        <rect x="66.783" width="378.435" height="33.391"/>
+                                                        <path d="M478.609,178.087h-55.652v33.391h22.261v200.348H66.783V211.478h22.261v-33.391H33.391v267.13h445.217V178.087z"/>
+                                                        <polygon points="33.391,478.609 33.391,445.217 0,445.217 0,512 512,512 512,445.217 478.609,445.217 478.609,478.609 "/>
+                            </svg>
+                        <h1 class="dark:text-gray-200 text-2xl ms-3 font-black">Logi-Flow</h1>
                     </div>
-                </div>
-
-                {{-- Profile dropdown --}}
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->admin_name ?? Auth::user()->staff_name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-
-                        {{-- This checks which user is logged in and generates the correct route --}}
-                        <x-dropdown-link :href="route('admin.profile.edit')">
-                            {{ __('Account Settings') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                             onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-
-                    </x-slot>
-                </x-dropdown>
+                </a>
             </div>
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
+            <!-- Navigation Links -->
+            <div class="flex-1 flex flex-col py-6 px-3 space-y-1 overflow-y-auto">
+                {{-- Dashboard view --}}
+                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.557 2.75H4.682A1.93 1.93 0 0 0 2.75 4.682v3.875a1.94 1.94 0 0 0 1.932 1.942h3.875a1.94 1.94 0 0 0 1.942-1.942V4.682A1.94 1.94 0 0 0 8.557 2.75m10.761 0h-3.875a1.94 1.94 0 0 0-1.942 1.932v3.875a1.943 1.943 0 0 0 1.942 1.942h3.875a1.94 1.94 0 0 0 1.932-1.942V4.682a1.93 1.93 0 0 0-1.932-1.932M8.557 13.5H4.682a1.943 1.943 0 0 0-1.932 1.943v3.875a1.93 1.93 0 0 0 1.932 1.932h3.875a1.94 1.94 0 0 0 1.942-1.932v-3.875a1.94 1.94 0 0 0-1.942-1.942m8.818-.001a3.875 3.875 0 1 0 0 7.75a3.875 3.875 0 0 0 0-7.75"/></svg>
+                    {{ __('Dashboard') }}
+                </x-nav-link>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-        </div>
+                {{-- Products view --}}
+                <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.742 18.555C4.942 20 7.174 20 11.64 20h.72c4.466 0 6.699 0 7.899-1.445m-16.517 0c-1.2-1.446-.788-3.64.035-8.03c.585-3.12.877-4.681 1.988-5.603M3.742 18.555Zm16.517 0c1.2-1.446.788-3.64-.035-8.03c-.585-3.12-.878-4.681-1.989-5.603m2.024 13.633ZM18.235 4.922C17.125 4 15.536 4 12.361 4h-.722c-3.175 0-4.763 0-5.874.922m12.47 0Zm-12.47 0Z"/><path stroke-linecap="round" d="M9.17 8a3.001 3.001 0 0 0 5.66 0"/></g></svg>
+                    {{ __('Products') }}
+                </x-nav-link>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
+                {{-- Orders view --}}
+                <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M10 13.25a.75.75 0 0 1 .75.75v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 1 .75-.75m4.75.75a.75.75 0 0 0-1.5 0v2a.75.75 0 0 0 1.5 0z"/><path fill="currentColor" fill-rule="evenodd" d="M9.65 3.375a.75.75 0 0 0-1.3-.75l-2 3.464a1 1 0 0 0-.069.161H6a2.75 2.75 0 0 0-1.739 4.88l.667 4.585l.447 2.093a3.05 3.05 0 0 0 2.561 2.384c2.697.375 5.432.375 8.128 0a3.05 3.05 0 0 0 2.561-2.384l.447-2.093l.667-4.584A2.75 2.75 0 0 0 18 6.25h-.281a1 1 0 0 0-.07-.162l-2-3.464a.75.75 0 1 0-1.298.75l1.66 2.875H7.99zm8.484 8.372L18 11.75H6q-.068 0-.133-.003l.538 3.703l.437 2.045a1.55 1.55 0 0 0 1.301 1.211c2.559.356 5.155.356 7.714 0a1.55 1.55 0 0 0 1.301-1.21l.437-2.046zM4.75 9c0-.69.56-1.25 1.25-1.25h12a1.25 1.25 0 1 1 0 2.5H6c-.69 0-1.25-.56-1.25-1.25" clip-rule="evenodd"/></svg>
+                    {{ __('Orders') }}
+                </x-nav-link>
 
-            <div class="mt-3 space-y-1">
-                <div x-data="{
-                        open: false,
-                        notifications: [],
-                        unreadCount: 0,
-                        fetchNotifications() {
-                            fetch('{{ config('services.api.url') }}/notifications', {
-                                headers: { 'Authorization': 'Bearer ' + '{{ session('api_token') }}', 'Accept': 'application/json' }
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                this.notifications = data;
-                                this.unreadCount = data.length;
-                            });
-                        },
-                        markAsRead(notificationId) {
-                            fetch('{{ config('services.api.url') }}/notifications/' + notificationId + '/mark-as-read', {
-                                method: 'POST',
-                                headers: { 'Authorization': 'Bearer ' + '{{ session('api_token') }}', 'Accept': 'application/json' },
-                            });
-                            // Instantly remove the notification from the UI
-                            this.notifications = this.notifications.filter(n => n.id !== notificationId);
-                            this.unreadCount--;
-                        }
-                     }"
-                     x-init="fetchNotifications(); setInterval(() => fetchNotifications(), 30000)"
-                     class="relative">
+                {{-- ADMIN ONLY --}}
+                @if(Auth::guard('company_admin')->check())
 
-                    {{-- Bell Icon with unread count badge --}}
-                    <button @click="open = !open" class="relative p-2 ...">
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 50 50">
-                            <path d="M 25 0 C 22.800781 0 21 1.800781 21 4 C 21 4.515625 21.101563 5.015625 21.28125 5.46875 C 15.65625 6.929688 12 11.816406 12 18 C 12 25.832031 10.078125 29.398438 8.25 31.40625 C 7.335938 32.410156 6.433594 33.019531 5.65625 33.59375 C 5.265625 33.878906 4.910156 34.164063 4.59375 34.53125 C 4.277344 34.898438 4 35.421875 4 36 C 4 37.375 4.84375 38.542969 6.03125 39.3125 C 7.21875 40.082031 8.777344 40.578125 10.65625 40.96875 C 13.09375 41.472656 16.101563 41.738281 19.40625 41.875 C 19.15625 42.539063 19 43.253906 19 44 C 19 47.300781 21.699219 50 25 50 C 28.300781 50 31 47.300781 31 44 C 31 43.25 30.847656 42.535156 30.59375 41.875 C 33.898438 41.738281 36.90625 41.472656 39.34375 40.96875 C 41.222656 40.578125 42.78125 40.082031 43.96875 39.3125 C 45.15625 38.542969 46 37.375 46 36 C 46 35.421875 45.722656 34.898438 45.40625 34.53125 C 45.089844 34.164063 44.734375 33.878906 44.34375 33.59375 C 43.566406 33.019531 42.664063 32.410156 41.75 31.40625 C 39.921875 29.398438 38 25.832031 38 18 C 38 11.820313 34.335938 6.9375 28.71875 5.46875 C 28.898438 5.015625 29 4.515625 29 4 C 29 1.800781 27.199219 0 25 0 Z M 25 2 C 26.117188 2 27 2.882813 27 4 C 27 5.117188 26.117188 6 25 6 C 23.882813 6 23 5.117188 23 4 C 23 2.882813 23.882813 2 25 2 Z M 27.34375 7.1875 C 32.675781 8.136719 36 12.257813 36 18 C 36 26.167969 38.078125 30.363281 40.25 32.75 C 41.335938 33.941406 42.433594 34.6875 43.15625 35.21875 C 43.515625 35.484375 43.785156 35.707031 43.90625 35.84375 C 44.027344 35.980469 44 35.96875 44 36 C 44 36.625 43.710938 37.082031 42.875 37.625 C 42.039063 38.167969 40.679688 38.671875 38.9375 39.03125 C 35.453125 39.753906 30.492188 40 25 40 C 19.507813 40 14.546875 39.753906 11.0625 39.03125 C 9.320313 38.671875 7.960938 38.167969 7.125 37.625 C 6.289063 37.082031 6 36.625 6 36 C 6 35.96875 5.972656 35.980469 6.09375 35.84375 C 6.214844 35.707031 6.484375 35.484375 6.84375 35.21875 C 7.566406 34.6875 8.664063 33.941406 9.75 32.75 C 11.921875 30.363281 14 26.167969 14 18 C 14 12.261719 17.328125 8.171875 22.65625 7.21875 C 23.320313 7.707031 24.121094 8 25 8 C 25.886719 8 26.679688 7.683594 27.34375 7.1875 Z M 21.5625 41.9375 C 22.683594 41.960938 23.824219 42 25 42 C 26.175781 42 27.316406 41.960938 28.4375 41.9375 C 28.792969 42.539063 29 43.25 29 44 C 29 46.222656 27.222656 48 25 48 C 22.777344 48 21 46.222656 21 44 C 21 43.242188 21.199219 42.539063 21.5625 41.9375 Z"></path>
-                        </svg>
-                        <span x-show="unreadCount > 0" class="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center" x-text="unreadCount"></span>
-                    </button>
+                    {{-- Users view --}}
+                    <x-nav-link :href="route('management.users.index')" :active="request()->routeIs('management.users.*')" class="my-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 1024 1024"><path fill="currentColor" d="M678.3 642.4c24.2-13 51.9-20.4 81.4-20.4h.1c3 0 4.4-3.6 2.2-5.6a371.7 371.7 0 0 0-103.7-65.8c-.4-.2-.8-.3-1.2-.5C719.2 505 759.6 431.7 759.6 349c0-137-110.8-248-247.5-248S264.7 212 264.7 349c0 82.7 40.4 156 102.6 201.1c-.4.2-.8.3-1.2.5c-44.7 18.9-84.8 46-119.3 80.6a373.4 373.4 0 0 0-80.4 119.5A373.6 373.6 0 0 0 137 888.8a8 8 0 0 0 8 8.2h59.9c4.3 0 7.9-3.5 8-7.8c2-77.2 32.9-149.5 87.6-204.3C357 628.2 432.2 597 512.2 597c56.7 0 111.1 15.7 158 45.1a8.1 8.1 0 0 0 8.1.3M512.2 521c-45.8 0-88.9-17.9-121.4-50.4A171.2 171.2 0 0 1 340.5 349c0-45.9 17.9-89.1 50.3-121.6S466.3 177 512.2 177s88.9 17.9 121.4 50.4A171.2 171.2 0 0 1 683.9 349c0 45.9-17.9 89.1-50.3 121.6C601.1 503.1 558 521 512.2 521M880 759h-84v-84c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v84h-84c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h84v84c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-84h84c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8"/></svg>
+                        {{ __('Users') }}
+                    </x-nav-link>
 
-                    {{-- Dropdown Menu --}}
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ...">
-                        <div class="p-2 font-bold text-sm">Notifications</div>
-                        <div class="border-t">
-                            {{-- Loop through notifications --}}
-                            <template x-for="notification in notifications" :key="notification.id">
-                                <div class="flex items-center justify-between p-2 hover:bg-gray-100">
-                                    <a href="'{{ url('/') }}' + notification.data.link" class="text-sm text-gray-700" x-text="notification.data.message"></a>
-                                    {{-- Mark as Read Button --}}
-                                    <button @click="markAsRead(notification.id)" title="Mark as read" class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                        <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </template>
-                            <div x-show="unreadCount === 0" class="p-4 text-sm text-gray-500 text-center">No new notifications</div>
-                        </div>
-                    </div>
-                </div>
+                    {{-- Company view --}}
+                    <x-nav-link :href="route('management.company.edit')" :active="request()->routeIs('management.company.*')" class="my-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><path d="M31.94 44.895c.036-1.3.06-2.91.06-4.895c0-3.565-.077-5.924-.161-7.441c-.088-1.581-1.015-2.894-2.574-3.173C28.091 29.176 26.395 29 24 29s-4.09.175-5.265.386c-1.559.279-2.486 1.591-2.574 3.173C16.077 34.076 16 36.434 16 40c0 1.984.024 3.595.06 4.895M6.09 6.916c.677-1.804 2.223-3.11 4.139-3.322C12.789 3.311 17.155 3 24 3s11.21.31 13.771.594c1.916.213 3.462 1.518 4.138 3.322C45 15.163 45 17.736 45 17.736A5.257 5.257 0 0 1 39.75 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 29.25 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 18.75 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 8.25 23C5.35 23 3 20.644 3 17.737c0 0 0-2.574 3.09-10.82Z"/><path d="M5 21.87V30c0 4.446.179 7.763.378 10.075c.217 2.536 2.216 4.408 4.756 4.563c2.939.18 7.484.362 13.866.362s10.927-.182 13.866-.362c2.54-.155 4.539-2.027 4.756-4.563c.2-2.312.378-5.629.378-10.075v-8.13"/></g></svg>
+                        {{ __('Company') }}
+                    </x-nav-link>
 
-                <x-responsive-nav-link :href="route('admin.profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
+                    {{-- Logs view --}}
+                    <x-nav-link :href="route('management.logs.index')" :active="request()->routeIs('management.logs.*')" class="my-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M3.5 10c0-3.771 0-5.657 1.245-6.828S7.993 2 12 2h.773c3.26 0 4.892 0 6.024.798c.324.228.612.5.855.805c.848 1.066.848 2.6.848 5.67v2.545c0 2.963 0 4.445-.469 5.628c-.754 1.903-2.348 3.403-4.37 4.113c-1.257.441-2.83.441-5.98.441c-1.798 0-2.698 0-3.416-.252c-1.155-.406-2.066-1.263-2.497-2.35c-.268-.676-.268-1.523-.268-3.216z"/><path d="M20.5 12a3.333 3.333 0 0 1-3.333 3.333c-.666 0-1.451-.116-2.098.057a1.67 1.67 0 0 0-1.179 1.179c-.173.647-.057 1.432-.057 2.098A3.333 3.333 0 0 1 10.5 22M8 7h7m-7 4h3"/></g></svg>
+                        {{ __('Logs') }}
+                    </x-nav-link>
 
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
+                @endif
 
-                    <x-dropdown-link :href="route('logout')"
-                                     onclick="event.preventDefault();
-                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-dropdown-link>
-                </form>
+                {{-- Analytics Report view --}}
+                <x-nav-link :href="route('analytics.index')" :active="request()->routeIs('analytics.index')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16.749 2h4.554l.1.014l.099.028l.06.026q.12.052.219.15l.04.044l.044.057l.054.09l.039.09l.019.064l.014.064l.009.095v4.532a.75.75 0 0 1-1.493.102l-.007-.102V4.559l-6.44 6.44a.75.75 0 0 1-.976.073L13 11L9.97 8.09l-5.69 5.689a.75.75 0 0 1-1.133-.977l.073-.084l6.22-6.22a.75.75 0 0 1 .976-.072l.084.072l3.03 2.91L19.438 3.5h-2.69a.75.75 0 0 1-.742-.648l-.007-.102a.75.75 0 0 1 .648-.743zM3.75 17a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75m5.75-3.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0zM13.75 15a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0v-5.5a.75.75 0 0 1 .75-.75m5.75-4.25a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0z"/></svg>
+                    {{ __('Analytics Report') }}
+                </x-nav-link>
 
             </div>
         </div>
