@@ -78,9 +78,11 @@ class SubscriptionController extends Controller
 
         // If the API returns validation errors, send them back to the form
         if ($response->status() === 422) {
+            dd($response->json());
             return back()->withErrors($response->json('errors'))->withInput();
         }
         if ($response->failed()) {
+            dd($response->json());
             return back()->with('error', 'An unexpected error occurred. Please try again.');
         }
 
