@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class OrderDetailResource extends JsonResource
 {
@@ -29,6 +30,7 @@ class OrderDetailResource extends JsonResource
 
             'items' => $this->whenLoaded('orderItems', fn() => $this->orderItems->map(fn($item) => [
                 'name' => $item->product->product_name,
+                'imageUrl' => $item->product->product_image ? Storage::disk('public')->url($item->product->product_image) : null,
                 'sku' => $item->product->product_SKU,
                 'quantity' => $item->order_item_quantity,
                 'price' => $item->order_item_unit_price,
