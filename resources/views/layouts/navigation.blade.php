@@ -1,107 +1,66 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav class="h-full flex flex-col bg-white dark:bg-gray-800">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('owner.dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                    </a>
-                </div>
-
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-
-                    {{-- Companies view --}}
-                    <x-nav-link :href="route('owner.dashboard')" :active="request()->routeIs('owner.dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-
-                    {{-- Analytics view --}}
-                    <x-nav-link :href="route('analytics.report')" :active="request()->routeIs('owner.analytics.report')">
-                        {{ __('Analytics Report') }}
-                    </x-nav-link>
-
-                </div>
+    <div class="flex-1 flex flex-col lg:px-2">
+        <div class="flex-1 flex flex-col min-h-0">
+            <!-- Logo -->
+            <div class="shrink-0 flex items-center my-10 px-6">
+                <a href="{{ route('owner.dashboard') }}">
+                    <div class="flex">
+                        <svg version="1.1" id="Layer_1" class="h-9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                             viewBox="0 0 512 512" xml:space="preserve">
+                            <polygon style="fill:#83C9FF;" points="512,178.087 512,100.174 478.609,100.174 478.609,33.391 445.217,33.391 445.217,0 66.783,0
+                                66.783,33.391 33.391,33.391 33.391,100.174 0,100.174 0,178.087 33.391,178.087 33.391,445.217 0,445.217 0,512 512,512
+                                512,445.217 478.609,445.217 478.609,178.087 "/>
+                            <polygon style="fill:#FB0023;" points="478.609,100.174 478.609,33.391 445.217,33.391 445.217,0 66.783,0 66.783,33.391
+                                33.391,33.391 33.391,100.174 0,100.174 0,178.087 33.391,178.087 33.391,211.478 89.043,211.478 89.043,178.087 122.435,178.087
+                                122.435,211.478 189.217,211.478 189.217,178.087 222.609,178.087 222.609,211.478 289.391,211.478 289.391,178.087
+                                322.783,178.087 322.783,211.478 389.565,211.478 389.565,178.087 422.957,178.087 422.957,211.478 478.609,211.478
+                                478.609,178.087 512,178.087 512,100.174 "/>
+                            <g>
+                                <rect x="122.435" style="fill:#FFFFFF;" width="66.783" height="211.478"/>
+                                <rect x="322.783" style="fill:#FFFFFF;" width="66.783" height="211.478"/>
+                            </g>
+                            <g>
+                                <rect x="100.174" y="244.87" style="fill:#00479B;" width="100.174" height="200.348"/>
+                                <rect x="233.739" y="244.87" style="fill:#00479B;" width="178.087" height="122.435"/>
+                            </g>
+                            <polygon style="fill:#787680;" points="478.609,445.217 478.609,411.826 33.391,411.826 33.391,445.217 0,445.217 0,512 512,512
+                                512,445.217 "/>
+                            <rect y="100.174" width="33.391" height="77.913"/>
+                            <rect x="89.043" y="133.565" width="33.391" height="44.522"/>
+                            <rect x="122.435" y="178.087" width="66.783" height="33.391"/>
+                            <rect x="289.391" y="133.565" width="33.391" height="44.522"/>
+                            <rect x="189.217" y="133.565" width="33.391" height="44.522"/>
+                            <rect x="322.783" y="178.087" width="66.783" height="33.391"/>
+                            <rect x="222.609" y="178.087" width="66.783" height="33.391"/>
+                            <rect x="389.565" y="133.565" width="33.391" height="44.522"/>
+                            <rect x="478.609" y="100.174" width="33.391" height="77.913"/>
+                            <rect x="33.391" y="33.391" width="33.391" height="66.783"/>
+                            <rect x="445.217" y="33.391" width="33.391" height="66.783"/>
+                            <rect x="66.783" width="378.435" height="33.391"/>
+                            <path d="M478.609,178.087h-55.652v33.391h22.261v200.348H66.783V211.478h22.261v-33.391H33.391v267.13h445.217V178.087z"/>
+                            <polygon points="33.391,478.609 33.391,445.217 0,445.217 0,512 512,512 512,445.217 478.609,445.217 478.609,478.609 "/>
+                            </svg>
+                        <h1 class="dark:text-gray-200 text-2xl ms-3 font-black">Logi-Flow</h1>
+                    </div>
+                </a>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->owner_name }}</div>
+            <!-- Navigation Links -->
+            <div class="flex-1 flex flex-col py-6 px-3 space-y-1 overflow-y-auto">
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                {{-- Companies view --}}
+                <x-nav-link :href="route('owner.dashboard')" :active="request()->routeIs('owner.dashboard')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><path d="M31.94 44.895c.036-1.3.06-2.91.06-4.895c0-3.565-.077-5.924-.161-7.441c-.088-1.581-1.015-2.894-2.574-3.173C28.091 29.176 26.395 29 24 29s-4.09.175-5.265.386c-1.559.279-2.486 1.591-2.574 3.173C16.077 34.076 16 36.434 16 40c0 1.984.024 3.595.06 4.895M6.09 6.916c.677-1.804 2.223-3.11 4.139-3.322C12.789 3.311 17.155 3 24 3s11.21.31 13.771.594c1.916.213 3.462 1.518 4.138 3.322C45 15.163 45 17.736 45 17.736A5.257 5.257 0 0 1 39.75 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 29.25 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 18.75 23c-2.9 0-5.25-2.356-5.25-5.263A5.257 5.257 0 0 1 8.25 23C5.35 23 3 20.644 3 17.737c0 0 0-2.574 3.09-10.82Z"/><path d="M5 21.87V30c0 4.446.179 7.763.378 10.075c.217 2.536 2.216 4.408 4.756 4.563c2.939.18 7.484.362 13.866.362s10.927-.182 13.866-.362c2.54-.155 4.539-2.027 4.756-4.563c.2-2.312.378-5.629.378-10.075v-8.13"/></g></svg>
+                    {{ __('Company') }}
+                </x-nav-link>
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('owner.profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                {{-- Analytics view --}}
+                <x-nav-link :href="route('analytics.report')" :active="request()->routeIs('owner.analytics.report')" class="my-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-3" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M16.749 2h4.554l.1.014l.099.028l.06.026q.12.052.219.15l.04.044l.044.057l.054.09l.039.09l.019.064l.014.064l.009.095v4.532a.75.75 0 0 1-1.493.102l-.007-.102V4.559l-6.44 6.44a.75.75 0 0 1-.976.073L13 11L9.97 8.09l-5.69 5.689a.75.75 0 0 1-1.133-.977l.073-.084l6.22-6.22a.75.75 0 0 1 .976-.072l.084.072l3.03 2.91L19.438 3.5h-2.69a.75.75 0 0 1-.742-.648l-.007-.102a.75.75 0 0 1 .648-.743zM3.75 17a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75m5.75-3.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0zM13.75 15a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0v-5.5a.75.75 0 0 1 .75-.75m5.75-4.25a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0z"/></svg>
+                    {{ __('Analytics Report') }}
+                </x-nav-link>
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('owner.dashboard')" :active="request()->routeIs('owner.dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-        </div>
-
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->owner_name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->owner_email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('owner.profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
             </div>
         </div>
     </div>
