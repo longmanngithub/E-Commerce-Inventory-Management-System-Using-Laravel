@@ -46,9 +46,16 @@ class CompanyUserController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:company_admin,admin_email', 'unique:company_staff,staff_email', 'unique:user_invitations,email'],
+            'email' => [
+                'required',
+                'email',
+                // This rule checks for uniqueness but ignores soft-deleted records
+                Rule::unique('company_admin', 'admin_email')->whereNull('deleted_at'),
+                Rule::unique('company_staff', 'staff_email')->whereNull('deleted_at'),
+                Rule::unique('user_invitations', 'email')->whereNull('deleted_at'),
+            ],
             'role' => ['required', 'in:admin,staff'],
-            'permissions' => 'nullable|array',
+            'permissions' => ['nullable', 'array'],
         ]);
 
         // Create the invitation record in the database with a unique token

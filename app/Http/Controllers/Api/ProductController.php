@@ -78,6 +78,7 @@ class ProductController extends Controller
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'product_price' => ['required', 'numeric', 'min:0'],
             'purchase_date' => ['required', 'date', 'before_or_equal:today'],
+            'product_expiry_date' => ['nullable', 'date'],
             'reorder_point' => ['required', 'integer', 'min:0'],
             'product_desc' => ['nullable', 'string'],
             'product_image' => ['nullable', 'image', 'max:2048']
@@ -123,54 +124,32 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        // Authorize the action first
         $this->authorize('update', $product);
 
+        // Validate all possible incoming data
         $validatedData = $request->validate([
-            'product_price' => 'required|numeric|min:0',
-            'reorder_point' => 'required|integer|min:0',
+            'reorder_point' => 'sometimes|required|integer|min:0',
             'product_desc' => 'nullable|string',
+            'stock_quantity' => 'nullable|integer|min:0', // For updating the latest stock record
             'product_image' => 'nullable|image|max:2048|sometimes',
-            'stock_quantity' => 'nullable|integer|min:0',
         ]);
 
-        $product->update($validatedData);
+        // Update the fields that belong to the main Product model
+        $product->update([
+            'reorder_point' => $validatedData['reorder_point'],
+            'product_desc' => $validatedData['product_desc'],
+        ]);
 
-        // If a stock quantity was provided, find and update the latest stock record
+        // If a stock quantity was provided, update the latest stock record
         if ($request->filled('stock_quantity')) {
             $latestStock = $product->stocks()->latest('stock_purchase_date')->first();
             if ($latestStock) {
-                $latestStock->update([
-                    'stock_quantity' => $request->stock_quantity,
-                ]);
+                $latestStock->update(['stock_quantity' => $validatedData['stock_quantity']]);
             }
         }
 
-        // --- AUTOMATIC STATUS UPDATE AND NOTIFICATION LOGIC ---
-        // After all updates, recalculate the total stock
-        $currentStock = $product->stocks()->sum('stock_quantity');
-        $reorderPoint = $product->reorder_point;
-
-        // Determine the new status
-        if ($currentStock <= 0) {
-            $product->stock_status = 'Out of Stock';
-        } elseif ($currentStock <= $reorderPoint) {
-            $product->stock_status = 'Low Stock';
-
-            // Get all users and send a notification to each one
-            $company = $product->company;
-            $adminsToNotify = $company->admins;
-            $staffToNotify = $company->staff;
-            $allUsersToNotify = $adminsToNotify->concat($staffToNotify);
-
-            foreach ($allUsersToNotify as $user) {
-                $user->notify(new \App\Notifications\LowStockWarning($product));
-            }
-        } else {
-            $product->stock_status = 'In Stock';
-        }
-
-        $product->save(); // Save the new stock_status to the product
-
+        // Handle the image upload if a new one was provided
         if ($request->hasFile('product_image')) {
             if ($product->product_image) {
                 Storage::disk('public')->delete($product->product_image);
@@ -179,15 +158,21 @@ class ProductController extends Controller
             $product->update(['product_image' => $imagePath]);
         }
 
-        $latestStock = $product->stocks()->latest('stock_purchase_date')->first();
-        if ($latestStock && $request->filled('stock_quantity')) {
-            $latestStock->update([
-                'stock_quantity' => $request->stock_quantity,
-            ]);
+        // --- AUTOMATIC NOTIFICATION LOGIC ---
+        // After all updates, recalculate the stock and check if a notification is needed
+        $currentStock = $product->stocks()->sum('stock_quantity');
+        if ($currentStock <= $product->reorder_point && $currentStock > 0) {
+            // Find the company owner and notify them
+            $companyOwner = $product->company->admins()->where('is_owner', true)->first();
+            if ($companyOwner) {
+                $companyOwner->notify(new \App\Notifications\LowStockWarning($product));
+            }
         }
 
+        // Log the update action
         $this->auditLogService->log($request, 'Updated', "Updated product '{$product->product_name}'", $product);
 
+        // Return the freshly updated resource. We use fresh() to get all the latest data.
         return new ProductResource($product->fresh()->load('stocks', 'category'));
     }
 

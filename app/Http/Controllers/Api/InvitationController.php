@@ -52,6 +52,7 @@ class InvitationController extends Controller
                 $emailColumn => $invitation->email,
                 $passwordColumn => Hash::make($validated['password']),
                 'company_id' => $invitation->company_id,
+                'permissions' => $invitation->permissions,
             ]);
 
             // Delete the invitation so it cannot be used again
