@@ -101,6 +101,16 @@ class CompanyStaff extends Authenticatable
     }
 
     /**
+     * Get the user's first name.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function getNameAttribute()
+    {
+        return $this->staff_name;
+    }
+
+    /**
      * Get the correct column name for the profile image.
      */
     public function getImageUrlColumn(): string
