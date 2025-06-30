@@ -187,7 +187,7 @@ class ProductController extends Controller
 
         $this->auditLogService->log(request(), 'Deleted', "Deleted product '{$product->product_name}'", $product);
 
-        return response()->noContent();
+        return response()->json('message', 'Product deleted successfully');
     }
 
     /**

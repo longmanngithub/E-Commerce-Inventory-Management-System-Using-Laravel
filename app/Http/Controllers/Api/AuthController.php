@@ -50,7 +50,9 @@ class AuthController extends Controller
             ]);
         }
 
-        throw ValidationException::withMessages(['email' => ['The provided credentials do not match our records.']]);
+        return response()->json([
+            'message' => 'The provided credentials do not match our records.',
+        ], 401);
     }
 
     public function logout(Request $request)
