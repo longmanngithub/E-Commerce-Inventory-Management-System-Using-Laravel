@@ -79,7 +79,7 @@
 
                                 {{-- Upload New Image --}}
                                 <div>
-                                    <x-input-label for="product_image" :value="__('Upload New Image (Optional)')" class="text-gray-700 dark:text-gray-300" />
+                                    <x-input-label for="product_image" :value="__('Upload New Image')" class="text-gray-700 dark:text-gray-300" />
                                     <input id="product_image" name="product_image" type="file" class="block mt-1 w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md px-3 py-2 text-sm">
                                     <x-input-error :messages="$errors->get('product_image')" class="mt-2" />
                                 </div>

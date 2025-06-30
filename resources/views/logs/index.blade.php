@@ -51,7 +51,7 @@
                     </div>
 
                     {{-- Audit Log Table --}}
-                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 md:rounded-lg">
+                    <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 md:rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>

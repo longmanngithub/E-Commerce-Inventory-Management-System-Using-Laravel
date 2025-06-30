@@ -105,7 +105,7 @@
                                                                    @if(in_array($category['id'], request('categories', []))) checked @endif
                                                                    class="sr-only category-checkbox">
                                                             <div class="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 group-hover:border-blue-500 transition-colors duration-200 flex items-center justify-center">
-                                                                <svg class="w-3 h-3 text-white hidden checkbox-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg class="w-3 h-3 dark:text-white text-blue-600 hidden checkbox-icon " fill="" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                                                                 </svg>
                                                             </div>
