@@ -75,7 +75,7 @@
                     </div>
 
                     {{-- Plan Distribution List --}}
-                    <div class="flex flex-col justify-center space-y-6 pe-24">
+                    <div class="flex flex-col justify-center space-y-6 md:pe-24">
                         @php $totalSubscriptions = $analyticsData['subscriptions']['total']; @endphp
                         @forelse($analyticsData['subscriptions']['distribution'] as $tier => $count)
                             <div class="flex items-center justify-between">
