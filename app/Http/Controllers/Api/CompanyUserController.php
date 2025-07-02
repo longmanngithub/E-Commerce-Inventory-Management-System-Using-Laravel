@@ -119,6 +119,11 @@ class CompanyUserController extends Controller
     public function destroyStaff(Request $request, CompanyStaff $staff)
     {
         $this->authorize('delete', $staff);
+
+        // Anonymize the email before soft-deleting
+        $staff->staff_email = $staff->staff_email . '_deleted_' . time();
+        $staff->save();
+
         $staff->delete();
 
         $this->auditLogService->log($request, 'Deleted', "Deleted staff: {$staff->staff_name}", $staff);
@@ -143,6 +148,10 @@ class CompanyUserController extends Controller
                 return response()->json(['message' => 'You cannot delete the last owner of the company. Please deactivate the company instead.'], 422);
             }
         }
+
+        // Anonymize the email before soft-deleting
+        $admin->admin_email = $admin->admin_email . '_deleted_' . time();
+        $admin->save();
 
         // If the checks pass, proceed with deletion
         $admin->delete();

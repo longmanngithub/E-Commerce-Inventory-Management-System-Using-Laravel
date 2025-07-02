@@ -85,6 +85,7 @@ class DashboardController extends Controller
                     // Only get product details if the subject exists and is a Product
                     if ($subject && $subject instanceof \App\Models\Product) {
                         $productName = $subject->product_name;
+                        $productCategory = optional($subject->category)->category_name;
                         $productSku = $subject->product_SKU;
                         $currentStock = $subject->stocks->sum('stock_quantity');
                         $stockStatus = $subject->stock_status;
@@ -98,6 +99,7 @@ class DashboardController extends Controller
                         'detail' => $log->details,
                         'timestamp' => $log->timestamp,
                         'subject_name' => $productName,
+                        'subject_category' => $productCategory,
                         'subject_sku' => $productSku,
                         'current_stock' => $currentStock,
                         'stock_status' => $stockStatus,
