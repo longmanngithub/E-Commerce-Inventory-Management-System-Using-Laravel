@@ -19,7 +19,7 @@ class OrderDetailResource extends JsonResource
             'id' => $this->order_id,
             'date' => $this->order_date,
             'status' => $this->order_status,
-            'totalAmount' => $this->total_amount,
+            'totalAmount' => number_format($this->total_amount, 2),
 
             'customer' => $this->whenLoaded('customer', fn() => [
                 'name' => $this->customer->customer_name,
@@ -32,9 +32,10 @@ class OrderDetailResource extends JsonResource
                 'name' => $item->product->product_name,
                 'imageUrl' => $item->product->product_image ? Storage::disk('public')->url($item->product->product_image) : null,
                 'sku' => $item->product->product_SKU,
+                'category' => $item->product->category->category_name,
                 'quantity' => $item->order_item_quantity,
-                'price' => $item->order_item_unit_price,
-                'subtotal' => $item->order_item_quantity * $item->order_item_unit_price,
+                'price' => number_format($item->order_item_unit_price, 2),
+                'subtotal' => number_format($item->order_item_quantity * $item->order_item_unit_price, 2),
             ])),
         ];
     }

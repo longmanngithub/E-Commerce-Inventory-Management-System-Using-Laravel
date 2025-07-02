@@ -6,6 +6,7 @@ use App\Models\CompanyAdmin;
 use App\Models\CompanyStaff;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class UserResource extends JsonResource
 {
@@ -29,15 +30,18 @@ class UserResource extends JsonResource
             $userType = 'admin';
             $name = $user->admin_name;
             $email = $user->admin_email;
+            $imageUrl = $user->admin_image ? Storage::disk('public')->url($user->admin_image) : null;
         } elseif ($user instanceof CompanyStaff) {
             $role = 'Staff';
             $userType = 'staff';
             $name = $user->staff_name;
             $email = $user->staff_email;
+            $imageUrl = $user->staff_image ? Storage::disk('public')->url($user->staff_image) : null;
         }
 
         return [
             'id' => $user->getKey(),
+            'imageUrl' => $imageUrl,
             'name' => $name,
             'email' => $email,
             'role' => $role,
