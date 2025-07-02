@@ -52,9 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://127.0.0.1:8000'),
-    'url_frontend' => env('FRONTEND_URL', 'http://127.0.0.1:8001'),
-    'url_backend' => env('BACKEND_URL', 'http://127.0.0.1:8002'),
+    'url' => env('APP_URL', 'http://localhost:8000'),
+    'url_frontend' => env('FRONTEND_URL', 'http://localhost:8001'),
+    'url_backend' => env('BACKEND_URL', 'http://localhost:8002'),
 
     /*
     |--------------------------------------------------------------------------
