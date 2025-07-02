@@ -46,7 +46,6 @@ class CompanyUserController extends Controller
         $response = $this->api($request)->post(config('services.api.url').'/users/invite', $request->all());
 
         if ($response->failed()) {
-            dd($response->json());
             return back()->withErrors($response->json('errors'))->withInput();
         }
 
