@@ -1,18 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex flex-col">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
-                    {{ __('Products') }}
-                </h2>
-                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all product details</h4>
-            </div>
+        <div class="hidden sm:flex flex-col">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                {{ __('Products') }}
+            </h2>
+            <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all product details</h4>
         </div>
     </x-slot>
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl">
                 <div class="p-6">
 
 
@@ -20,7 +18,7 @@
                         @csrf
                         @method('PUT')
 
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center p-2 md:p-6">
                             {{-- LEFT COLUMN - Product Image ONLY --}}
                             <div class="space-y-4">
                                 <div class="aspect-square rounded-lg flex items-center justify-center">
@@ -50,29 +48,29 @@
                                         </svg>
                                     </a>
                                     <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
-                                        {{ $product['name'] ?? 'Lay\'s Potato Chip' }}
+                                        {{ $product['name'] }}
                                     </h2>
                                 </div>
 
                                 {{-- Product SKU and Category Info --}}
                                 <div class="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                                    <span>SKU: {{ $product['sku'] ?? '6969696969' }}</span>
+                                    <span>SKU: {{ $product['sku'] }}</span>
                                     <span class="mx-2">•</span>
-                                    <span>Category: {{ $product['category']['name'] ?? 'Food & Beverage' }}</span>
+                                    <span>Category: {{ $product['category'] }}</span>
                                 </div>
 
                                 {{-- Price Section --}}
                                 <div class="border-b border-gray-200 dark:border-gray-600 pb-6">
                                     <div class="flex items-baseline space-x-2 mb-4">
                                         <span class="text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">USD</span>
-                                        <span class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($product['price'] ?? 0.69, 2) }}</span>
+                                        <span class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($product['price'], 2) }}</span>
                                     </div>
 
                                     {{-- Editable Description --}}
                                     <div>
                                         <textarea name="product_desc" rows="3"
                                                   class="w-full text-sm text-gray-600 dark:text-gray-400 bg-transparent border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700"
-                                                  placeholder="Product description...">{{ old('product_desc', $product['description'] ?? 'Lay\'s Potato Chip is made with specially selected potatoes and to the highest quality standards.') }}</textarea>
+                                                  placeholder="Product description...">{{ old('product_desc', $product['description']) }}</textarea>
                                         <x-input-error :messages="$errors->get('product_desc')" class="mt-2" />
                                     </div>
                                 </div>
@@ -101,7 +99,7 @@
                                             </button>
                                             <input id="stock_quantity" name="stock_quantity" type="number"
                                                    class="w-20 text-center border-none bg-transparent font-semibold text-lg text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                   value="{{ old('stock_quantity', $product['totalStockQuantity'] ?? 247) }}" />
+                                                   value="{{ old('stock_quantity', $product['totalStockQuantity']) }}" />
                                             <button type="button" onclick="increaseQuantity()" class="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">
                                                 <span class="text-lg">+</span>
                                             </button>
@@ -118,7 +116,7 @@
                                                 </svg>
                                                 <span class="text-sm text-gray-600 dark:text-gray-400">Monthly Sales</span>
                                             </div>
-                                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">83</div>
+                                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $product['overviewStats']['monthlySales'] }}</div>
                                         </div>
 
                                         <div class="py-3 px-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -130,7 +128,7 @@
                                             </div>
                                             <input id="reorder_point" name="reorder_point" type="number"
                                                    class="text-2xl font-bold text-orange-600 dark:text-orange-400 border-none bg-transparent p-0 w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                   value="{{ old('reorder_point', $product['reorderPoint'] ?? 50) }}" />
+                                                   value="{{ old('reorder_point', $product['reorderPoint']) }}" />
                                         </div>
                                     </div>
                                 </div>
@@ -144,13 +142,13 @@
                                             <span class="text-gray-600 dark:text-gray-400">Product Name</span>
                                             <input name="product_name"
                                                    class="text-right border-none bg-transparent p-0 font-medium text-gray-900 dark:text-gray-100 max-w-xs"
-                                                   value="{{ old('product_name', $product['name'] ?? 'Lay\'s Potato Chip') }}" readonly />
+                                                   value="{{ old('product_name', $product['name']) }}" readonly />
                                         </div>
 
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-600 dark:text-gray-400">Product Category</span>
                                             <span class="text-right font-medium text-gray-900 dark:text-gray-100">
-                                                {{ $product['category']['name'] ?? 'Food & Beverage' }}
+                                                {{ $product['category'] }}
                                             </span>
                                         </div>
 
@@ -158,7 +156,7 @@
                                             <span class="text-gray-600 dark:text-gray-400">Expiry Date</span>
                                             <input name="product_expiry_date" type="date"
                                                    class="text-right border-none bg-transparent p-0 font-medium text-gray-900 dark:text-gray-100"
-                                                   value="{{ old('product_expiry_date', $product['expiryDate'] ?? '2025-06-30') }}" readonly />
+                                                   value="{{ old('product_expiry_date', $product['expiryDate']) }}" readonly />
                                         </div>
 
                                         {{-- Hidden fields for other data --}}

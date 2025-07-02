@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Dashboard') }}
             </h2>
@@ -10,12 +10,20 @@
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Dashboard') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View company dashboard</h4>
+            </div>
+
             {{-- Check if dashboard data exists before trying to display it --}}
             @if(!empty($dashboardData))
                 <div class="space-y-6 h-full">
                     {{-- Overview Cards --}}
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="flex sm:grid sm:grid-cols-4 gap-6 overflow-x-auto">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
                                     <g fill="none" stroke="#007AFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
@@ -27,7 +35,7 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-gray-900 dark:text-white">{{ $dashboardData['overview']['totalProducts'] }}</p>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
                                     <g fill="none" stroke="#34C759" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
@@ -40,7 +48,7 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-green-600 dark:text-green-400">{{ $dashboardData['overview']['inStock'] }}</p>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
                                     <g class="warning-outline">
@@ -55,7 +63,7 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-yellow-600 dark:text-yellow-400">{{ $dashboardData['overview']['lowStock'] }}</p>
                         </div>
-                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
                                     <path fill="#FF3B30" fill-rule="evenodd" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12s4.477 10 10 10m4.066-14.066a.75.75 0 0 1 0 1.06L13.06 12l3.005 3.005a.75.75 0 0 1-1.06 1.06L12 13.062l-3.005 3.005a.75.75 0 1 1-1.06-1.06L10.938 12L7.934 8.995a.75.75 0 1 1 1.06-1.06L12 10.938l3.005-3.005a.75.75 0 0 1 1.06 0" clip-rule="evenodd" />
@@ -79,7 +87,7 @@
                     </div>
 
                     {{-- Recent Inventory Activity Table --}}
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl border border-gray-200 dark:border-gray-700">
                         <div class="p-6 text-gray-900 dark:text-white">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recent Inventory Activity</h3>
@@ -90,7 +98,9 @@
                                     </svg>
                                 </a>
                             </div>
-                            <div class="overflow-x-auto">
+
+                            {{-- Desktop Table View --}}
+                            <div class="hidden md:block overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
@@ -134,6 +144,79 @@
                                     @endforelse
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {{-- Mobile Card View --}}
+                            <div class="md:hidden space-y-4">
+                                @forelse($dashboardData['recentActivity'] as $log)
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                                        {{-- Product Info Section --}}
+                                        <div class="flex items-start space-x-4 mb-4">
+                                            @if ($log['product_image_url'])
+                                            <div class="h-16 w-16 flex-shrink-0">
+                                                <img class="h-full w-full rounded-lg object-contain p-1" src="{{ $log['product_image_url'] }}" alt="">
+                                            </div>
+                                            @else
+                                                <div class="h-16 w-16 flex-shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+                                                        <path fill="currentColor" fill-rule="evenodd" d="m72.837 72.837l362.667 362.667l-30.17 30.17L387.66 448H64V124.34l-21.333-21.332zm204.497 289.83L170.667 256l-64.001 101.12v48.213h238.327l-56.282-56.283zM448 64v323.661L313.796 253.457l27.538-27.537l63.999 64V106.666H167.005L124.339 64zM106.666 167.005v108.872l41.741-67.131zm202.668-17.671c17.673 0 32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32s14.327-32 32-32" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                            <div class="flex-1 min-w-0">
+                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white text-wrap">
+                                                    {{ $log['subject_name'] ?? 'N/A' }}
+                                                </h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    <span class="inline-flex items-center">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                                        </svg>
+                                                        {{ $log['subject_category'] }}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                @php
+                                                    $statusColor = match($log['stock_status']) {
+                                                        'In Stock' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                        'Low Stock' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                                        'Out of Stock' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                        default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                                                    };
+                                                @endphp
+                                                <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColor }}">
+                                                    {{ $log['stock_status'] }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Details Section --}}
+                                        <div class="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">SKU</p>
+                                                <p class="text-gray-900 dark:text-white font-medium">{{ $log['subject_sku'] ?? 'N/A' }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">Stock</p>
+                                                <p class="text-gray-900 dark:text-white font-bold text-lg">{{ $log['current_stock'] }}</p>
+                                            </div>
+                                        </div>
+
+                                        {{-- Update Info --}}
+                                        <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                            <p class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">Update</p>
+                                            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">{{ $log['detail'] }}</p>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-8">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 009.586 13H7"/>
+                                        </svg>
+                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No recent product activity.</p>
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                     </div>

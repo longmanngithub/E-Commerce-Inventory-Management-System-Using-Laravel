@@ -1,18 +1,25 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex flex-col">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
-                    {{ __('Products') }}
-                </h2>
-                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all product details</h4>
-            </div>
+        <div class="hidden sm:flex flex-col">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                {{ __('Products') }}
+            </h2>
+            <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all product details</h4>
         </div>
     </x-slot>
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Products') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all product details</h4>
+            </div>
+
+
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     {{-- Search Bar and Filter/Delete Actions --}}
@@ -62,7 +69,7 @@
                                         <path fill="currentColor" d="M8 11.5c-.28 0-.5-.22-.5-.5V5c0-.28.22-.5.5-.5s.5.22.5.5v6c0 .28-.22.5-.5.5" />
                                         <path fill="currentColor" d="M11 8.5H5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5h6c.28 0 .5.22.5.5s-.22.5-.5.5" />
                                     </svg>
-                                    Add Product
+                                    Add
                                 </button>
                             @endcan
 
@@ -221,40 +228,33 @@
 
                     {{-- Custom Bulk Delete Modal --}}
                     <div id="bulk-delete-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0" id="bulk-delete-modal-content">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-95 opacity-0" id="bulk-delete-modal-content">
                             {{-- Modal Header --}}
-                            <div class="px-6 pt-6">
-                                <div class="flex items-center justify-between">
-                                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delete products</h2>
-                                    <button type="button" id="close-bulk-delete-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
+                            <div class="px-6 pt-6 text-center">
+                                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Delete products</h2>
                             </div>
 
                             {{-- Modal Body --}}
-                            <div class="px-6 py-4">
+                            <div class="px-6 py-4 text-center">
                                 <p class="text-gray-600 dark:text-gray-400 text-base leading-relaxed">
                                     Are you sure you want to delete <span id="selected-count" class="font-medium text-gray-900 dark:text-white">0</span> selected products? This action cannot be undone.
                                 </p>
                             </div>
 
                             {{-- Modal Footer --}}
-                            <div class="px-6 pb-6">
-                                <div class="space-y-3">
-                                    <hr class="border-gray-200 dark:border-gray-700 -mx-6">
-                                    <div class="pt-3">
-                                        <button type="button" id="cancel-bulk-delete"
-                                                class="w-full px-4 py-3 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-center transition-colors duration-200">
+                            <div class="px-2 pb-1">
+                                <div class="space-y-1">
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-2">
+                                    <div class="pt-1">
+                                        <button type="button" id="close-bulk-delete-modal"
+                                                class="w-full px-4 py-3 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold text-lg text-center transition-colors duration-200">
                                             Cancel
                                         </button>
                                     </div>
-                                    <hr class="border-gray-200 dark:border-gray-700 -mx-6">
-                                    <div class="pt-3">
-                                        <button type="button" id="confirm-bulk-delete"
-                                                class="w-full px-4 py-3 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium text-center transition-colors duration-200">
+                                    <hr class="border-gray-200 dark:border-gray-700 -mx-2">
+                                    <div class="pt-1">
+                                        <button type="button" id="confirm-delete"
+                                                class="w-full px-4 py-3 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold text-lg text-center transition-colors duration-200">
                                             Delete
                                         </button>
                                     </div>
@@ -273,7 +273,8 @@
                         </form>
                     @endcan
 
-                    <div class="overflow-x-auto">
+                    {{-- Desktop Table Layout --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
@@ -320,7 +321,9 @@
                                             </div>
                                         @else
                                             <div class="h-16 w-16 bg-gray-200 flex items-center justify-center rounded-lg">
-                                                <span class="text-xs text-gray-500">No img</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+                                                    <path fill="currentColor" fill-rule="evenodd" d="m72.837 72.837l362.667 362.667l-30.17 30.17L387.66 448H64V124.34l-21.333-21.332zm204.497 289.83L170.667 256l-64.001 101.12v48.213h238.327l-56.282-56.283zM448 64v323.661L313.796 253.457l27.538-27.537l63.999 64V106.666H167.005L124.339 64zM106.666 167.005v108.872l41.741-67.131zm202.668-17.671c17.673 0 32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32s14.327-32 32-32" />
+                                                </svg>
                                             </div>
                                         @endif
                                     </td>
@@ -404,7 +407,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ auth()->user()->can('bulk-delete-products') ? '9' : '8' }}"
+                                    <td colspan="{{ auth()->user()->can('bulk-delete-products') ? '10' : '9' }}"
                                         class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,6 +421,170 @@
                             @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Mobile Card Layout --}}
+                    <div class="block md:hidden space-y-4">
+                        @can('bulk-delete-products')
+                            {{-- Mobile Bulk Actions Header --}}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="select-all-checkbox-mobile" class="rounded border-gray-300 text-blue-600 shadow-sm mr-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Select All</span>
+                                </label>
+                            </div>
+                        @endcan
+
+                        @forelse ($products as $product)
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                {{-- Card Header with Image and Basic Info --}}
+                                <div class="p-4 cursor-pointer" onclick="window.location.href='{{ route('products.show', $product['id']) }}'">
+                                    <div class="flex items-start space-x-4">
+                                        {{-- Product Image --}}
+                                        <div class="flex-shrink-0">
+                                            @if($product['imageUrl'])
+                                                <div class="h-16 w-16">
+                                                    <img src="{{ $product['imageUrl'] }}" alt="{{ $product['name'] }}"
+                                                         class="h-full w-full object-contain rounded-lg">
+                                                </div>
+                                            @else
+                                                <div class="h-20 w-20 bg-gray-200 dark:bg-gray-600 flex items-center justify-center rounded-lg">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+                                                        <path fill="currentColor" fill-rule="evenodd" d="m72.837 72.837l362.667 362.667l-30.17 30.17L387.66 448H64V124.34l-21.333-21.332zm204.497 289.83L170.667 256l-64.001 101.12v48.213h238.327l-56.282-56.283zM448 64v323.661L313.796 253.457l27.538-27.537l63.999 64V106.666H167.005L124.339 64zM106.666 167.005v108.872l41.741-67.131zm202.668-17.671c17.673 0 32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32s14.327-32 32-32" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        {{-- Product Info --}}
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 text-wrap">
+                                                        {{ $product['name'] }}
+                                                    </h3>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                        SKU: {{ $product['sku'] }}
+                                                    </p>
+                                                    <div class="flex items-center mt-2">
+                                                        <svg class="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                                        </svg>
+                                                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ $product['category'] }}</span>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Stock Status Badge --}}
+                                                <div class="ml-4 flex-shrink-0">
+                                                    @php
+                                                        $statusConfig = match($product['stockStatus']) {
+                                                            'In Stock' => [
+                                                                'bg' => 'bg-green-100 dark:bg-green-900/30',
+                                                                'text' => 'text-green-600 dark:text-green-400',
+                                                                'label' => 'In Stock: ' . $product['stockQuantity']
+                                                            ],
+                                                            'Low Stock' => [
+                                                                'bg' => 'bg-yellow-100 dark:bg-yellow-900/30',
+                                                                'text' => 'text-yellow-600 dark:text-yellow-400',
+                                                                'label' => 'Low Stock: ' . $product['stockQuantity']
+                                                            ],
+                                                            'Out of Stock' => [
+                                                                'bg' => 'bg-red-100 dark:bg-red-900/30',
+                                                                'text' => 'text-red-600 dark:text-red-400',
+                                                                'label' => 'Out of Stock'
+                                                            ],
+                                                            default => [
+                                                                'bg' => 'bg-gray-100 dark:bg-gray-700',
+                                                                'text' => 'text-gray-600 dark:text-gray-400',
+                                                                'label' => $product['stockStatus']
+                                                            ]
+                                                        };
+                                                    @endphp
+                                                    <div class="px-3 py-2 rounded-full text-xs font-semibold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
+                                                        {{ $statusConfig['label'] }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Card Footer with Actions and Details --}}
+                                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4">
+                                            @can('bulk-delete-products')
+                                                {{-- Checkbox --}}
+                                                <div onclick="event.stopPropagation()">
+                                                    <input type="checkbox" name="product_ids[]" value="{{ $product['id'] }}"
+                                                           class="product-checkbox rounded border-gray-300 text-blue-600 shadow-sm"
+                                                           form="bulk-delete-form">
+                                                </div>
+                                            @endcan
+
+                                            {{-- Price and Status --}}
+                                            <div class="flex items-center space-x-3">
+                                                <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                                    USD {{ number_format($product['price'], 2) }}
+                                                </span>
+
+                                                {{-- Status Toggle --}}
+                                                <div onclick="event.stopPropagation()">
+                                                    <a href="{{ route('products.toggleStatus', $product['id']) }}"
+                                                       class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium transition-colors duration-200 {{ $product['status'] === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' }}">
+                                                        @if($product['status'] === 'Active')
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                            </svg>
+                                                        @else
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                                            </svg>
+                                                        @endif
+                                                        {{ $product['status'] }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Action Buttons --}}
+                                        <div class="flex items-center space-x-2" onclick="event.stopPropagation()">
+                                            {{-- Edit --}}
+                                            @if($product['permissions']['update'])
+                                                <a href="{{ route('products.edit', $product['id']) }}?{{ http_build_query(request()->query()) }}"
+                                                   class="p-2 text-white hover:text-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-blue-600 rounded-lg transition-colors">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                </a>
+                                            @endif
+
+                                            {{-- Delete --}}
+                                            @if($product['permissions']['delete'])
+                                                <button type="button" class="delete-product-btn p-2 text-white hover:text-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 bg-red-600 rounded-lg transition-colors"
+                                                        data-product-id="{{ $product['id'] }}"
+                                                        data-product-name="{{ $product['name'] }}">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-12">
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium text-gray-500 dark:text-gray-400">No products found</p>
+                                    <p class="text-sm text-gray-400 dark:text-gray-500">Add your first product to get started.</p>
+                                </div>
+                            </div>
+                        @endforelse
                     </div>
 
                     {{-- Pagination --}}
@@ -891,7 +1058,11 @@
                 }
 
                 // Bulk delete functionality
-                if (selectAll && checkboxes.length > 0 && bulkDeleteBtn) {
+                if (checkboxes.length > 0 && bulkDeleteBtn) {
+                    // Get both desktop and mobile select all checkboxes
+                    const selectAllDesktop = document.getElementById('select-all-checkbox');
+                    const selectAllMobile = document.getElementById('select-all-checkbox-mobile');
+
                     function toggleButtonState() {
                         let checkedCount = 0;
                         checkboxes.forEach(checkbox => {
@@ -899,24 +1070,57 @@
                                 checkedCount++;
                             }
                         });
+
+                        // Update bulk delete button state
                         bulkDeleteBtn.disabled = checkedCount === 0;
+
+                        // Update select all checkboxes based on individual checkbox states
+                        const allChecked = checkedCount === checkboxes.length;
+                        const someChecked = checkedCount > 0 && checkedCount < checkboxes.length;
+
+                        // Update desktop select all checkbox
+                        if (selectAllDesktop) {
+                            selectAllDesktop.checked = allChecked;
+                            selectAllDesktop.indeterminate = someChecked;
+                        }
+
+                        // Update mobile select all checkbox
+                        if (selectAllMobile) {
+                            selectAllMobile.checked = allChecked;
+                            selectAllMobile.indeterminate = someChecked;
+                        }
+
                         return checkedCount;
                     }
 
-                    selectAll.addEventListener('click', function (event) {
-                        checkboxes.forEach(checkbox => {
-                            checkbox.checked = event.target.checked;
+                    // Desktop select all functionality
+                    if (selectAllDesktop) {
+                        selectAllDesktop.addEventListener('click', function (event) {
+                            checkboxes.forEach(checkbox => {
+                                checkbox.checked = event.target.checked;
+                            });
+                            toggleButtonState();
                         });
-                        toggleButtonState();
-                    });
+                    }
 
+                    // Mobile select all functionality
+                    if (selectAllMobile) {
+                        selectAllMobile.addEventListener('click', function (event) {
+                            checkboxes.forEach(checkbox => {
+                                checkbox.checked = event.target.checked;
+                            });
+                            toggleButtonState();
+                        });
+                    }
+
+                    // Individual checkbox functionality
                     checkboxes.forEach(checkbox => {
                         checkbox.addEventListener('click', function() {
                             toggleButtonState();
                         });
                     });
 
-                    // Bulk delete button click - now opens custom modal
+                    // Bulk delete button click - opens custom modal
                     bulkDeleteBtn.addEventListener('click', function() {
                         const count = toggleButtonState();
                         if (count > 0) {

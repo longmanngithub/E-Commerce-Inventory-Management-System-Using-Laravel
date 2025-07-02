@@ -1,23 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                {{ __('Logs') }}
+            </h2>
+            <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all actions from company users</h4>
+        </div>
+    </x-slot>
+
+    <div class="py-12 px-4 lg:px-12 h-full">
+        <div class="max-w-full mx-auto h-full">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                     {{ __('Logs') }}
                 </h2>
                 <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all actions from company users</h4>
             </div>
 
-        </div>
-    </x-slot>
-
-    <div class="py-12 px-4 lg:px-12 h-full">
-        <div class="max-w-full mx-auto h-full">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
                     {{-- Search and Filter Section --}}
-                    <div class="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <div class="mb-6 flex flex-row gap-4 justify-between items-center">
                         {{-- Search Form --}}
                         <form id="search-form" action="{{ route('management.logs.index') }}" method="GET" class="relative flex-1 max-w-md">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -50,8 +55,8 @@
                         </button>
                     </div>
 
-                    {{-- Audit Log Table --}}
-                    <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 md:rounded-lg">
+                    {{-- Desktop Table View --}}
+                    <div class="hidden md:block overflow-x-auto shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 md:rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
@@ -92,6 +97,48 @@
                             @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Mobile Card View --}}
+                    <div class="md:hidden space-y-4">
+                        @forelse ($logs as $log)
+                            @php
+                                // Color-code the badge based on the action type
+                                $actionColor = match($log['action']) {
+                                    'Add', 'Created' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                                    'Update', 'Updated' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                    'Delete', 'Deleted' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                    'Export' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                                    default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                                };
+                            @endphp
+                            <div
+                                class="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md transition-shadow duration-200"
+                                onclick="openLogDetailModal('{{ $log['userName'] ?? 'System' }}', '{{ $log['action'] }}', '{{ $log['entity'] }}', '{{ \Carbon\Carbon::parse($log['timestamp'])->format('d/m/Y, H:i:s') }}PM', '{{ addslashes($log['detail']) }}')"
+                            >
+                                <div class="flex items-start justify-between mb-3">
+                                    <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ $log['userName'] ?? 'System' }}</h3>
+                                    <span class="px-2 py-1 text-xs font-medium rounded {{ $actionColor }}">
+                                        {{ $log['action'] }}
+                                    </span>
+                                </div>
+
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    <span class="font-medium">Entity:</span> {{ $log['entity'] }}
+                                </div>
+
+                                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ \Carbon\Carbon::parse($log['timestamp'])->format('d/m/Y, H:i:s') }}PM
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                No log entries found.
+                            </div>
+                        @endforelse
                     </div>
 
                     {{-- Pagination Section --}}
@@ -149,6 +196,49 @@
         </div>
     </div>
 
+    {{-- Log Detail Modal (Mobile Only) --}}
+    <div id="logDetailModal" class="md:hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-75 overflow-y-auto h-full w-full z-50 opacity-0 invisible transition-all duration-300 ease-in-out">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div id="logDetailModalContent" class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md mx-auto transform scale-95 transition-all duration-300 ease-out">
+                {{-- Modal Header --}}
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Log Details</h2>
+                    <button type="button" onclick="closeLogDetailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Modal Body --}}
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start justify-between">
+                            <h3 id="modalUserName" class="font-semibold text-lg text-gray-900 dark:text-gray-100"></h3>
+                            <span id="modalActionBadge" class="px-2 py-1 text-xs font-medium rounded"></span>
+                        </div>
+
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <span class="font-medium">Entity:</span> <span id="modalEntity"></span>
+                        </div>
+
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span id="modalTimestamp"></span>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Details:</h4>
+                            <p id="modalDetails" class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openFilterModal() {
             const modal = document.getElementById('filterModal');
@@ -183,6 +273,61 @@
             }, 200);
         }
 
+        function openLogDetailModal(userName, action, entity, timestamp, details) {
+            const modal = document.getElementById('logDetailModal');
+            const modalContent = document.getElementById('logDetailModalContent');
+
+            // Populate modal content
+            document.getElementById('modalUserName').textContent = userName;
+            document.getElementById('modalEntity').textContent = entity;
+            document.getElementById('modalTimestamp').textContent = timestamp;
+            document.getElementById('modalDetails').textContent = details;
+
+            // Set action badge with appropriate color
+            const badge = document.getElementById('modalActionBadge');
+            badge.textContent = action;
+
+            // Remove all existing color classes
+            badge.className = 'px-2 py-1 text-xs font-medium rounded';
+
+            // Add appropriate color based on action
+            const actionColorClasses = {
+                'Add': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'Created': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                'Update': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'Updated': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                'Delete': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                'Deleted': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                'Export': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+            };
+
+            const colorClasses = actionColorClasses[action] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+            badge.className += ' ' + colorClasses;
+
+            modal.classList.remove('invisible');
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeLogDetailModal() {
+            const modal = document.getElementById('logDetailModal');
+            const modalContent = document.getElementById('logDetailModalContent');
+
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+
+            setTimeout(() => {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('opacity-0');
+                modal.classList.add('invisible');
+            }, 200);
+        }
+
         function resetFilters() {
             // Clear all form fields
             document.getElementById('search').value = '';
@@ -197,6 +342,13 @@
         document.getElementById('filterModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeFilterModal();
+            }
+        });
+
+        // Close log detail modal when clicking outside
+        document.getElementById('logDetailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLogDetailModal();
             }
         });
 
@@ -217,6 +369,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeFilterModal();
+                closeLogDetailModal();
             }
         });
     </script>

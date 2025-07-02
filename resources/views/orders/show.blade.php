@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Orders') }}
             </h2>
@@ -10,8 +10,17 @@
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg sm:rounded-2xl">
-                <div class="p-12">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Orders') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View all customer orders</h4>
+            </div>
+
+
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-2xl">
+                <div class="p-6 md:p-12">
 
                     <div class="flex justify-between items-center mb-10">
                         <div class="flex items-center space-x-2">
@@ -87,7 +96,7 @@
 
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total</p>
-                                <p class="text-3xl font-bold text-gray-900 dark:text-white">USD {{ number_format($order['totalAmount'], 2) }}</p>
+                                <p class="text-3xl font-bold text-gray-900 dark:text-white">USD {{ $order['totalAmount'] }}</p>
                             </div>
                         </div>
                     </div>
@@ -96,7 +105,7 @@
 
                     {{-- Order Items Section --}}
                     <div class="mb-8">
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="flex justify-between items-center mb-6 gap-12">
                             <div>
                                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Order Items</h2>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Overview of all purchased products</p>
@@ -110,8 +119,51 @@
                             </a>
                         </div>
 
-                        {{-- Responsive Table --}}
-                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
+                        {{-- Mobile Cards (visible on small screens) --}}
+                        <div class="block md:hidden space-y-4">
+                            @foreach($order['items'] as $item)
+                                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                                    {{-- Product Header --}}
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="flex-shrink-0 h-16 w-16 rounded-xl flex items-center justify-center">
+                                                <img class="h-full w-full rounded-lg object-contain" src="{{ $item['imageUrl'] ?? '...' }}" alt="{{ $item['name'] }}">
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate text-wrap">{{ $item['name'] }}</h3>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 text-wrap">SKU: {{ $item['sku'] }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right ml-4">
+                                            <p class="text-xl font-bold text-green-600 dark:text-green-400">USD {{ $item['price'] }}</p>
+                                        </div>
+                                    </div>
+
+                                    {{-- Product Details --}}
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a2 2 0 012-2z"></path>
+                                            </svg>
+                                            <span class="text-sm text-gray-600 dark:text-gray-300">{{ $item['category'] }}</span>
+                                        </div>
+
+                                        <div class="flex flex-col items-end space-y-4">
+                                            <div class="text-right">
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">Qty: {{ $item['quantity'] }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">Subtotal</p>
+                                                <p class="text-lg font-semibold text-gray-900 dark:text-white">USD {{ $item['subtotal'] }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Desktop Table (hidden on small screens) --}}
+                        <div class="hidden md:block bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
                             <div class="overflow-x-auto">
                                 <table class="min-w-full">
                                     <thead class="bg-gray-100 dark:bg-gray-800">
@@ -136,7 +188,7 @@
                                                     </div>
                                                     <div>
                                                         <p class="font-medium text-gray-900 dark:text-white">{{ $item['name'] }}</p>
-                                                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['description'] ?? 'Product description' }}</p>
+                                                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item['category'] }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -144,15 +196,15 @@
                                                 {{ $item['sku'] }}
                                             </td>
                                             <td class="px-6 py-6 text-center">
-                                                    <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium rounded-full">
-                                                        {{ $item['quantity'] }}
-                                                    </span>
+                                                <span class="inline-flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium rounded-full">
+                                                    {{ $item['quantity'] }}
+                                                </span>
                                             </td>
                                             <td class="px-6 py-6 text-right text-sm font-medium text-gray-900 dark:text-white">
-                                                USD {{ number_format($item['price'], 2) }}
+                                                USD {{ $item['price'] }}
                                             </td>
                                             <td class="px-6 py-6 text-right text-lg font-semibold text-gray-900 dark:text-white">
-                                                USD {{ number_format($item['quantity'] * $item['price'], 2) }}
+                                                USD {{ $item['subtotal'] }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -168,11 +220,11 @@
                             <dl class="space-y-4">
                                 <div class="flex justify-between">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</dt>
-                                    <dd class="text-sm font-medium text-gray-900 dark:text-white">USD {{ number_format($order['totalAmount'] - 25, 2) }}</dd>
+                                    <dd class="text-sm font-medium text-gray-900 dark:text-white">USD {{ $order['totalAmount'] }}</dd>
                                 </div>
                                 <div class="flex justify-between">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Shipping</dt>
-                                    <dd class="text-sm font-medium text-gray-900 dark:text-white">USD 25.00</dd>
+                                    <dd class="text-sm font-medium text-gray-900 dark:text-white">USD 0.00</dd>
                                 </div>
                                 <div class="flex justify-between">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tax</dt>
@@ -181,7 +233,7 @@
                                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                                     <div class="flex justify-between">
                                         <dt class="text-lg font-semibold text-gray-900 dark:text-white">Total</dt>
-                                        <dd class="text-lg font-semibold text-gray-900 dark:text-white">USD {{ number_format($order['totalAmount'], 2) }}</dd>
+                                        <dd class="text-lg font-semibold text-gray-900 dark:text-white">USD {{ $order['totalAmount'] }}</dd>
                                     </div>
                                 </div>
                             </dl>

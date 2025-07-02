@@ -1,18 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex flex-col">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
-                    {{ __('User Management') }}
-                </h2>
-                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">Manage all user permissions</h4>
-            </div>
+        <div class="hidden sm:flex flex-col">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                {{ __('User Management') }}
+            </h2>
+            <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">Manage all user permissions</h4>
         </div>
     </x-slot>
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl transition-colors">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('User Management') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">Manage all user permissions</h4>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-2xl transition-colors">
 
                 {{-- Invite Users Button --}}
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -31,11 +37,13 @@
                         @endif
                     </div>
 
-                    <div class="overflow-x-auto">
+                    {{-- Desktop Table View --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider rounded-tl-lg">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider rounded-tl-lg">Image</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Permissions</th>
@@ -45,16 +53,30 @@
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse ($users as $user)
                                 <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <td class="px-6 py-4 text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                                        @if($user['imageUrl'])
+                                            <div class="h-16 w-16">
+                                                <img src="{{ $user['imageUrl'] }}" alt="{{ $user['name'] }}"
+                                                     class="h-full w-full object-contain rounded-full">
+                                            </div>
+                                        @else
+                                            <div class="h-16 w-16 bg-gray-200 dark:bg-gray-600 flex items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-600">
+                                                <svg class="h-8 w-8 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                </svg>
+                                            </div>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-gray-900 dark:text-gray-100">{{ $user['name'] }}</td>
                                     <td class="px-6 py-4 text-gray-900 dark:text-gray-100">{{ $user['email'] }}</td>
                                     <td class="px-6 py-4 text-gray-900 dark:text-gray-100">{{ $user['role'] }}</td>
                                     <td class="px-6 py-4">
                                         {{-- Display permissions for staff --}}
                                         @if($user['type'] === 'staff' && !empty($user['permissions']))
-                                            <div class="flex flex-wrap gap-1">
+                                            <div class="flex flex-wrap gap-2">
                                                 @foreach($user['permissions'] as $permission)
                                                     @php
-                                                        // THE FIX: Add color coding for different permissions
+                                                        // Add color coding for different permissions
                                                         $permissionColor = match($permission) {
                                                             'create_product' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
                                                             'update_product' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
@@ -100,7 +122,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-8 whitespace-nowrap text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="6" class="px-6 py-8 whitespace-nowrap text-center text-gray-500 dark:text-gray-400">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
@@ -113,6 +135,96 @@
                             @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Mobile Card View --}}
+                    <div class="md:hidden space-y-4">
+                        @forelse ($users as $user)
+                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+                                <div class="p-4">
+                                    {{-- User Info Section --}}
+                                    <div class="flex items-start space-x-4 mb-4">
+                                        {{-- Avatar --}}
+                                        <div class="flex-shrink-0">
+                                            @if($user['imageUrl'])
+                                                <img src="{{ $user['imageUrl'] }}" alt="{{ $user['name'] }}"
+                                                     class="h-16 w-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                            @else
+                                                <div class="h-16 w-16 bg-gray-200 dark:bg-gray-600 flex items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-600">
+                                                    <svg class="h-8 w-8 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        {{-- User Details --}}
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ $user['name'] }}</h3>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 truncate">{{ $user['email'] }}</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-500 mt-1">Role: {{ $user['role'] }}</p>
+                                        </div>
+
+                                        {{-- Action Buttons --}}
+                                        <div class="flex space-x-2">
+                                            {{-- Edit Button for Staff --}}
+                                            @if($user['type'] === 'staff')
+                                                <button class="p-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                                        x-data
+                                                        @click.prevent="$dispatch('open-modal', { name: 'edit-user', user: {{ json_encode($user) }} })"
+                                                        title="Edit User">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                </button>
+                                            @endif
+
+                                            {{-- Delete Button --}}
+                                            @if($user['role'] !== 'Company Owner' && ($user['id'] !== Auth::id()))
+                                                <button class="p-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                                                        x-data
+                                                        @click.prevent="$dispatch('open-modal', { name: 'delete-user', user: {{ json_encode($user) }} })"
+                                                        title="Delete User">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- Permissions Section --}}
+                                    @if($user['type'] === 'staff' && !empty($user['permissions']))
+                                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Permission:</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($user['permissions'] as $permission)
+                                                    @php
+                                                        $permissionColor = match($permission) {
+                                                            'create_product' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+                                                            'update_product' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                                                            'delete_product' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                                                            default => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                                                        };
+                                                    @endphp
+                                                    <span class="px-3 py-1 text-xs font-medium rounded-full {{ $permissionColor }}">
+                                                        {{ ucwords(str_replace('_', ' ', $permission)) }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-12">
+                                <svg class="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <p class="text-lg font-medium text-gray-900 dark:text-white">No users found</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Start by inviting your first user to the system.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

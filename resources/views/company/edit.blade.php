@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Company Settings') }}
             </h2>
@@ -11,56 +11,69 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
-            {{-- Subscription Status Section --}}
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-2xl">
-                <section>
-                    <header class="flex items-start space-x-6 border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
-                        {{-- Logo --}}
-                        <div class="flex-shrink-0">
-                            @if($company['imageUrl'])
-                                <img src="{{ $company['imageUrl'] }}" alt="{{ $company['name'] }}" class="h-24 w-24 rounded-lg object-contain bg-gray-100 dark:bg-gray-700 p-1">
-                            @else
-                                <div class="h-24 w-24 rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                    <span class="text-2xl font-bold text-gray-500 dark:text-gray-400">{{ substr($company['name'], 0, 1) }}</span>
-                                </div>
-                            @endif
-                        </div>
-                        {{-- Details --}}
-                        <div class="flex-grow space-y-2">
-                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $company['name'] }}</h2>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Total users: {{ $company['totalUsers'] }}</p>
-                            @if($company['subscription'])
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Status:</span>
-                                    <div class="flex items-center space-x-1">
-                                        {{-- Status Icon --}}
-                                        @if($company['subscription']['status'] === 'Paid')
-                                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        @else
-                                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-                                        @endif
-                                        <span class="font-medium {{ $company['subscription']['status'] === 'Paid' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">{{ $company['subscription']['status'] }}</span>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Subscription Plan: <span class="font-medium text-gray-800 dark:text-gray-200">{{ $company['subscription']['plan'] }}</span></p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Next billing cycle: <span class="font-medium text-gray-800 dark:text-gray-200">{{ \Carbon\Carbon::parse($company['subscription']['nextBillingCycle'])->format('F d, Y') }}</span></p>
-                            @endif
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Company Settings') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">Manage company information</h4>
+            </div>
 
-                            {{-- Company Logo Upload Button --}}
-                            <div>
-                                <div class="relative inline-block mt-3">
-                                    <input type="file" name="company_image" id="company_image" class="sr-only" accept="image/*" onchange="handleFileUpload(this)"/>
-                                    <label for="company_image" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors duration-200">
-                                        <svg class="w-4 h-4 me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
-                                        Upload New Photo
-                                    </label>
+
+            {{-- Subscription Status Section --}}
+            <div class="p-6 sm:p-8 bg-white dark:bg-gray-800 shadow rounded-2xl">
+                <section>
+                    <header class="flex items-start space-y-6 border-b border-gray-200 dark:border-gray-700 pb-6 mb-6">
+
+                        <div class="w-full flex flex-col md:flex-row justify-between space-x-0 space-y-6 md:space-x-6 md:space-y-0">
+                            {{-- Logo --}}
+                            <div class="flex-shrink-0">
+                                @if($company['imageUrl'])
+                                    <img src="{{ $company['imageUrl'] }}" alt="{{ $company['name'] }}" class="h-24 w-24 rounded-lg object-contain bg-gray-100 dark:bg-gray-700 p-1">
+                                @else
+                                    <div class="h-24 w-24 rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                        <span class="text-2xl font-bold text-gray-500 dark:text-gray-400">{{ substr($company['name'], 0, 1) }}</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Details --}}
+                            <div class="flex-grow space-y-2">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $company['name'] }}</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Total users: {{ $company['totalUsers'] }}</p>
+                                @if($company['subscription'])
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                                        <div class="flex items-center space-x-1">
+                                            {{-- Status Icon --}}
+                                            @if($company['subscription']['status'] === 'Paid')
+                                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            @else
+                                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            @endif
+                                            <span class="font-medium {{ $company['subscription']['status'] === 'Paid' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">{{ $company['subscription']['status'] }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Subscription Plan: <span class="font-medium text-gray-800 dark:text-gray-200">{{ $company['subscription']['plan'] }}</span></p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Next billing cycle: <span class="font-medium text-gray-800 dark:text-gray-200">{{ \Carbon\Carbon::parse($company['subscription']['nextBillingCycle'])->format('F d, Y') }}</span></p>
+                                @endif
+
+                                {{-- Company Logo Upload Button --}}
+                                <div>
+                                    <div class="relative inline-block mt-3">
+                                        <input type="file" name="company_image" id="company_image" class="sr-only" accept="image/*" onchange="handleFileUpload(this)"/>
+                                        <label for="company_image" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors duration-200">
+                                            <svg class="w-4 h-4 me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
+                                            Upload New Photo
+                                        </label>
+                                    </div>
+                                    <x-input-error class="mt-2" :messages="$errors->get('company_image')" />
                                 </div>
-                                <x-input-error class="mt-2" :messages="$errors->get('company_image')" />
                             </div>
                         </div>
+
                         {{-- Change Plan Button --}}
                         @if(Auth::user()->is_owner)
-                            <div>
+                            <div class="flex-shrink-0">
                                 <a href="{{ route('subscription.plans') }}" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200">
                                     Change Plan
                                 </a>
@@ -86,7 +99,7 @@
                                     @csrf
                                     @method('PUT')
 
-                                    <div class="grid grid-cols-2 gap-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {{-- Company Name --}}
                                         <div>
                                             <x-input-label for="company_name" :value="__('Company Name')" />
@@ -102,7 +115,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {{-- Company Website --}}
                                         <div>
                                             <x-input-label for="company_website" :value="__('Company Website')" />
@@ -143,7 +156,7 @@
 
             {{-- Deactivate Company "Danger Zone" --}}
             @if(Auth::user()->is_owner)
-                <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-2xl mt-8">
+                <div class="p-6 sm:p-8 bg-white dark:bg-gray-800 shadow rounded-2xl mt-8">
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-red-600 dark:text-red-400">{{ __('Deactivate Company') }}</h2>
