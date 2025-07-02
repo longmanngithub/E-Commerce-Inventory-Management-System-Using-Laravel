@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Companies') }}
             </h2>
@@ -10,6 +10,15 @@
 
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
+
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Companies') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View company information</h4>
+            </div>
+
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 @forelse($companies as $company)
                     <a href="{{ route('company.show', $company['id']) }}">

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Account Settings') }}
             </h2>
@@ -11,8 +11,15 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
+                    {{ __('Account Settings') }}
+                </h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">Manage account</h4>
+            </div>
+
             {{-- Profile --}}
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow rounded-2xl">
                 {{-- This form is ONLY for updating the profile photo --}}
                 <form id="photo-upload-form" method="post" action="{{ route('owner.profile.updatePhoto') }}" enctype="multipart/form-data">
                     @csrf
@@ -20,9 +27,17 @@
 
                     <div class="flex items-center">
                         {{-- Profile Picture Display --}}
-                        <div class="flex-shrink-0">
-                            <img class="h-20 w-20 rounded-full object-cover" src="{{ Auth::user()->image_url ?? 'https://via.placeholder.com/150' }}" alt="{{ Auth::user()->name }}">
-                        </div>
+                        @if(Auth::user()->image_url)
+                            <div class="flex-shrink-0">
+                                <img class="h-20 w-20 rounded-full object-cover" src="{{ Auth::user()->image_url }}" alt="{{ Auth::user()->name }}">
+                            </div>
+                        @else
+                            <div class="flex-shrink-0">
+                                <svg class="h-20 w-20 text-gray-400 dark:text-gray-500 rounded-full object-cover" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                        @endif
 
                         {{-- Name and Email (Display Only) --}}
                         <div class="ms-4">
@@ -45,15 +60,15 @@
 
 
             {{-- Update Profile Information Form --}}
-            <div class="grid grid-cols-2 gap-6 my-6">
-                <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+                <div class="p-6 sm:p-8 bg-white dark:bg-gray-800 shadow rounded-2xl">
                     <div class="w-full">
                         @include('profile.partials.update-profile-information-form')
                     </div>
                 </div>
 
                 {{-- Update Password Form --}}
-                <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <div class="p-6 sm:p-8 bg-white dark:bg-gray-800 shadow rounded-2xl">
                     <div class="w-full">
                         @include('profile.partials.update-password-form')
                     </div>

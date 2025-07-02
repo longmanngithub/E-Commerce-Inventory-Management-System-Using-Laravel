@@ -1,16 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ __('Analytics') }}</h2>
             <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View company performance</h4>
         </div>
     </x-slot>
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
-            {{-- Overview Cards --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-7">
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="lg:hidden flex flex-col mb-6 px-3">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ __('Analytics') }}</h2>
+                <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View company performance</h4>
+            </div>
+
+
+            {{-- Overview Cards --}}
+            <div class="flex md:grid grid-cols-1 md:grid-cols-4 gap-6 mb-7 overflow-x-auto">
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
                             <path fill="#007AFF" d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4" />
@@ -20,7 +27,7 @@
                     <p class="mt-3 text-4xl font-semibold text-gray-900 dark:text-white">{{ number_format($analyticsData['overview']['users']) }}</p>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                     <div class="flex items-center">
                         <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -30,7 +37,7 @@
                     <p class="mt-3 text-4xl font-semibold text-gray-900 dark:text-white">{{ $analyticsData['overview']['companies'] }}</p>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                     <div class="flex items-center">
                         <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
@@ -40,7 +47,7 @@
                     <p class="mt-3 text-4xl font-semibold text-gray-900 dark:text-white">{{ number_format($analyticsData['overview']['products']) }}</p>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                     <div class="flex items-center">
                         <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -109,7 +116,8 @@
                         </a>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    {{-- Desktop Table Layout --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
@@ -145,8 +153,71 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Mobile Card Layout --}}
+                    <div class="md:hidden space-y-4">
+                        @forelse($analyticsData['bestPerformingCompanies'] as $company)
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                {{-- Company Name and Performance Badge --}}
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $company['name'] }}</h4>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium {{ $company['revenueChange'] >= 0 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                            {{ $company['revenueChange'] >= 0 ? '+' : '' }}{{ number_format($company['revenueChange'], 1) }}%
+                        </span>
+                                </div>
+
+                                {{-- Stats Row --}}
+                                <div class="grid grid-cols-3 gap-3 mb-3">
+                                    {{-- Users --}}
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="mr-2">
+                                            <path fill="currentColor" d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4" />
+                                        </svg>
+                                        <span class="text-sm">{{ $company['users'] }} users</span>
+                                    </div>
+
+                                    {{-- Products --}}
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="mr-2" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                        <span class="text-sm">{{ number_format($company['products']) }} products</span>
+                                    </div>
+
+                                    {{-- Orders --}}
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="mr-2" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <span class="text-sm">{{ $company['orders'] }} orders</span>
+                                    </div>
+                                </div>
+
+                                {{-- Sales Performance --}}
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center text-{{ $company['revenueChange'] >= 0 ? 'green' : 'red' }}-600 dark:text-{{ $company['revenueChange'] >= 0 ? 'green' : 'red' }}-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" class="mr-2" fill="none" stroke="currentColor">
+                                            @if($company['revenueChange'] >= 0)
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                            @else
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                                            @endif
+                                        </svg>
+                                        <span class="text-sm font-medium">{{ $company['revenueChange'] >= 0 ? '+' : '' }}{{ number_format($company['revenueChange'], 1) }}% sales</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Not enough data to determine best performing companies.
+                                </p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 

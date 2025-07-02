@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col">
+        <div class="hidden sm:flex flex-col">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                 {{ __('Company Overview') }}
             </h2>
@@ -11,7 +11,7 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-between items-center mb-8 gap-x-3">
                 <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
                     <a href="{{ route('owner.dashboard') }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
                         &larr; {{ $companyData['name'] }}
@@ -22,11 +22,11 @@
                 <div>
                     {{-- Conditionally show the Reactivate button --}}
                     @if($companyData['status'] === 'Inactive')
-                        <button type="button" onclick="openReactivateModal()" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-base text-white hover:bg-green-500 dark:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200">
+                        <button type="button" onclick="openReactivateModal()" class="inline-flex items-center px-2 md:px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-base text-white hover:bg-green-500 dark:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="me-2" width="24" height="24" viewBox="0 0 24 24">
                                 <path fill="currentColor" d="M21.5 9h-5l1.86-1.86A7.99 7.99 0 0 0 12 4c-4.42 0-8 3.58-8 8c0 1.83.61 3.5 1.64 4.85c1.22-1.4 3.51-2.35 6.36-2.35s5.15.95 6.36 2.35A7.95 7.95 0 0 0 20 12h2c0 5.5-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2c3.14 0 5.95 1.45 7.78 3.72L21.5 4zM12 7c1.66 0 3 1.34 3 3s-1.34 3-3 3s-3-1.34-3-3s1.34-3 3-3" />
                             </svg>
-                            Reactivate Company
+                            Reactivate
                         </button>
                     @endif
                 </div>
@@ -36,13 +36,13 @@
 
                 {{-- Left Column - Company Logo & Info --}}
                 <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 space-y-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 space-y-6">
                         {{-- Company Logo --}}
-                        <div class="flex justify-center">
+                        <div class="flex">
                             @if($companyData['imageUrl'])
-                                <img src="{{ $companyData['imageUrl'] }}" alt="{{ $companyData['name'] }}" class="w-32 h-32 object-contain">
+                                <img src="{{ $companyData['imageUrl'] }}" alt="{{ $companyData['name'] }}" class="w-full h-full rounded-lg object-contain">
                             @else
-                                <div class="w-32 h-32 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <div class="w-full aspect-square bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
                                     <span class="text-white font-bold text-2xl">{{ substr($companyData['name'], 0, 1) }}</span>
                                 </div>
                             @endif
@@ -90,15 +90,15 @@
                 <div class="lg:col-span-3 space-y-8">
 
                     {{-- Key Metrics Cards --}}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="flex md:grid grid-cols-1 md:grid-cols-3 gap-6 overflow-x-auto">
                         {{-- All Products --}}
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 min-w-48">
                             <div class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">All Products</div>
                             <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $companyData['analytics']['allProducts'] }}</div>
                         </div>
 
                         {{-- Revenue --}}
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 min-w-max">
                             <div class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">Revenue</div>
                             <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">+ {{ number_format($companyData['analytics']['revenue'], 1) }}%</div>
                             <div class="text-{{ $companyData['analytics']['revenueChange'] >= 0 ? 'green' : 'red' }}-600 dark:text-{{ $companyData['analytics']['revenueChange'] >= 0 ? 'green' : 'red' }}-400 text-sm font-medium">
@@ -107,7 +107,7 @@
                         </div>
 
                         {{-- Sales --}}
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 min-w-max">
                             <div class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">Sales</div>
                             <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">+ {{ number_format($companyData['analytics']['sales'], 1) }}%</div>
                             <div class="text-{{ $companyData['analytics']['salesChange'] >= 0 ? 'green' : 'red' }}-600 dark:text-{{ $companyData['analytics']['salesChange'] >= 0 ? 'green' : 'red' }}-400 text-sm font-medium">
@@ -117,7 +117,7 @@
                     </div>
 
                     {{-- Company Details Section --}}
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
                         <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Company Details</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-1 gap-6 text-base">
@@ -151,10 +151,53 @@
                     </div>
 
                     {{-- Best Selling Products Section --}}
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Best Selling Products</h3>
 
-                        <div class="overflow-x-auto">
+                        {{-- Mobile Layout (Cards) --}}
+                        <div class="block md:hidden space-y-4">
+                            @forelse($companyData['bestSellingProducts'] as $product)
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+                                    {{-- Product Name and Revenue Badge --}}
+                                    <div class="flex justify-between items-start mb-3">
+                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white leading-tight">
+                                            {{ $product['product_name'] }}
+                                        </h4>
+                                        <div class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm font-medium ml-3 flex-shrink-0">
+                                            + {{ number_format($product['revenue'], 1) }}%
+                                        </div>
+                                    </div>
+
+                                    {{-- Category and Sales --}}
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center text-gray-500 dark:text-gray-400">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                            </svg>
+                                            {{ $product['category_name'] }}
+                                        </div>
+                                        <div class="flex items-center text-green-600 dark:text-green-400 font-medium">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                                            </svg>
+                                            + {{ number_format($product['revenue'], 1) }}% sales
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-8 text-center">
+                                    <div class="text-gray-400 dark:text-gray-500 mb-2">
+                                        <svg class="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 2C4.477 2 0 6.477 0 12s4.477 10 10 10 10-4.477 10-10S15.523 2 10 2zM8 11a1 1 0 100-2 1 1 0 000 2zm4 0a1 1 0 100-2 1 1 0 000 2zm-2 3a3 3 0 01-2.83-2H6a1 1 0 100-2h1.17a3 3 0 015.66 0H14a1 1 0 100 2h-1.17A3 3 0 0110 14z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">No product sales data for this company.</p>
+                                </div>
+                            @endforelse
+                        </div>
+
+                        {{-- Desktop Layout (Table) --}}
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full">
                                 <thead>
                                 <tr class="border-b border-gray-200 dark:border-gray-700">
