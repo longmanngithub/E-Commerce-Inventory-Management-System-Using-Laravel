@@ -11,7 +11,7 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
-            <div class="lg:hidden flex flex-col mb-6 px-3">
+            <div class="sm:hidden flex flex-col mb-6 px-3">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                     {{ __('Company Settings') }}
                 </h2>

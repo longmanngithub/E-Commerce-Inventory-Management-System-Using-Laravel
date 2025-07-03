@@ -11,7 +11,7 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
-            <div class="lg:hidden flex flex-col mb-6 px-3">
+            <div class="sm:hidden flex flex-col mb-6 px-3">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight dark:text-white">
                     {{ __('Dashboard') }}
                 </h2>
@@ -22,7 +22,8 @@
             @if(!empty($dashboardData))
                 <div class="space-y-6 h-full">
                     {{-- Overview Cards --}}
-                    <div class="flex sm:grid sm:grid-cols-4 gap-6 overflow-x-auto">
+                    <div class="flex lg:grid lg:grid-cols-4 gap-6 overflow-x-auto">
+                        {{-- Total Products --}}
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
@@ -35,6 +36,8 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-gray-900 dark:text-white">{{ $dashboardData['overview']['totalProducts'] }}</p>
                         </div>
+
+                        {{-- In Stock --}}
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
@@ -48,6 +51,8 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-green-600 dark:text-green-400">{{ $dashboardData['overview']['inStock'] }}</p>
                         </div>
+
+                        {{-- Low Stock --}}
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
@@ -63,6 +68,8 @@
                             </div>
                             <p class="mt-3 text-4xl font-semibold text-yellow-600 dark:text-yellow-400">{{ $dashboardData['overview']['lowStock'] }}</p>
                         </div>
+
+                        {{-- Out of Stock --}}
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 min-w-max">
                             <div class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">

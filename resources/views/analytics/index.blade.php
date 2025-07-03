@@ -9,7 +9,7 @@
     <div class="py-12 px-4 lg:px-12 h-full">
         <div class="max-w-full mx-auto h-full">
 
-            <div class="lg:hidden flex flex-col mb-6 px-3">
+            <div class="sm:hidden flex flex-col mb-6 px-3">
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">{{ __('Analytics Report') }}</h2>
                 <h4 class="mt-1 text-sm leading-tight dark:text-gray-500">View company performance</h4>
             </div>

@@ -154,9 +154,10 @@
 
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-600 dark:text-gray-400">Expiry Date</span>
-                                            <input name="product_expiry_date" type="date"
-                                                   class="text-right border-none bg-transparent p-0 font-medium text-gray-900 dark:text-gray-100"
-                                                   value="{{ old('product_expiry_date', $product['expiryDate']) }}" readonly />
+                                            <span class="text-right font-medium text-gray-900 dark:text-gray-100">
+                                                {{ \Carbon\Carbon::parse($product['expiryDate'])->format('m/d/Y') }}
+                                            </span>
+                                            <input name="product_expiry_date" type="hidden" value="{{ old('product_expiry_date', $product['expiryDate']) }}" />
                                         </div>
 
                                         {{-- Hidden fields for other data --}}
