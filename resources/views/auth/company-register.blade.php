@@ -90,21 +90,21 @@
         {{-- Company name --}}
         <div>
             <x-input-label for="company_name" :value="__('Company Name')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
-            <x-text-input id="company_name" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="text" name="company_name" :value="old('company_name')" required autofocus autocomplete="organization" />
+            <x-text-input id="company_name" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="text" name="company_name" :value="old('company_name')" placeholder="Enter your company name" required autofocus autocomplete="organization" />
             <x-input-error :messages="$errors->get('company_name')" class="mt-2" />
         </div>
 
         {{-- Company email --}}
         <div class="mt-4">
             <x-input-label for="company_email" :value="__('Company Email')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
-            <x-text-input id="company_email" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="email" name="company_email" :value="old('company_email')" required autocomplete="email" />
+            <x-text-input id="company_email" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="email" name="company_email" :value="old('company_email')" placeholder="Enter your company email" required autocomplete="email" />
             <x-input-error :messages="$errors->get('company_email')" class="mt-2" />
         </div>
 
         {{-- Company address --}}
         <div class="mt-4">
             <x-input-label for="company_address" :value="__('Company Address')" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" />
-            <x-text-input id="company_address" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="text" name="company_address" :value="old('company_address')" required autocomplete="street-address" />
+            <x-text-input id="company_address" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition duration-200" type="text" name="company_address" :value="old('company_address')" placeholder="Enter your company address" required autocomplete="street-address" />
             <x-input-error :messages="$errors->get('company_address')" class="mt-2" />
         </div>
 
