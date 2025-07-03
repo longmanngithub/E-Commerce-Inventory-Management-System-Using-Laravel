@@ -22,6 +22,17 @@
             stroke-width: 2;
             fill: none;
         }
+
+        /* Hide number input arrows on desktop */
+        .code-input[type=number]::-webkit-outer-spin-button,
+        .code-input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .code-input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 
     <!-- Back Button -->
@@ -47,26 +58,62 @@
         <div class="mt-6"
              x-data="{
                     code: Array(6).fill(''),
+                    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                     handleInput(index, event) {
-                        if (! /^[0-9]$/.test(event.target.value)) {
+                        let value = event.target.value;
+
+                        // For number inputs, get the last digit
+                        if (this.isMobile && event.target.type === 'number') {
+                            value = value.slice(-1);
+                        }
+
+                        // Only allow digits
+                        if (value && !/^[0-9]$/.test(value)) {
                             event.target.value = '';
                             return;
                         }
-                        if (event.target.value && index < 6) {
+
+                        // Update the code array
+                        this.code[index - 1] = value;
+
+                        // Move to next input if value entered and not last input
+                        if (value && index < 6) {
                             $refs['code-input-' + (index + 1)].focus();
                         }
-                        this.code[index - 1] = event.target.value;
+
+                        // Update hidden field
                         $refs.combined_code.value = this.code.join('');
+                    },
+                    handleKeydown(index, event) {
+                        // Handle backspace
+                        if (event.key === 'Backspace' && !event.target.value && index > 1) {
+                            $refs['code-input-' + (index - 1)].focus();
+                        }
+
+                        // For non-mobile, prevent non-numeric input
+                        if (!this.isMobile && event.key !== 'Backspace' && event.key !== 'Tab' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && !/^[0-9]$/.test(event.key)) {
+                            event.preventDefault();
+                        }
                     },
                     handlePaste(event) {
                         let paste = (event.clipboardData || window.clipboardData).getData('text').slice(0, 6);
                         paste.split('').forEach((char, i) => {
-                            this.code[i] = char;
+                            if (/^[0-9]$/.test(char) && i < 6) {
+                                this.code[i] = char;
+                                if ($refs['code-input-' + (i + 1)]) {
+                                    $refs['code-input-' + (i + 1)].value = char;
+                                }
+                            }
                         });
                         $refs.combined_code.value = this.code.join('');
+
+                        // Focus on the next empty input or last input
+                        let nextEmptyIndex = this.code.findIndex(c => !c);
+                        if (nextEmptyIndex === -1) nextEmptyIndex = 5;
+                        $refs['code-input-' + (nextEmptyIndex + 1)].focus();
                     }
                  }"
-                         @paste.prevent="handlePaste">
+             @paste.prevent="handlePaste">
 
             <!-- Hidden Combined Code -->
             <input type="hidden" name="code" x-ref="combined_code">
@@ -75,12 +122,15 @@
             <div class="grid grid-cols-6 gap-3 w-full">
                 @for ($i = 0; $i < 6; $i++)
                     <input
-                        type="number"
                         x-ref="code-input-{{ $i + 1 }}"
                         x-model="code[{{ $i }}]"
+                        :type="isMobile ? 'number' : 'text'"
+                        :inputmode="isMobile ? 'numeric' : 'text'"
+                        :pattern="isMobile ? '[0-9]*' : null"
                         maxlength="1"
                         @input="handleInput({{ $i + 1 }}, $event)"
-                        class="w-full aspect-square p-0 text-center text-4xl font-semibold tracking-widest rounded-2xl shadow-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                        @keydown="handleKeydown({{ $i + 1 }}, $event)"
+                        class="code-input w-full aspect-square p-0 text-center text-4xl font-semibold tracking-widest rounded-2xl shadow-sm border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-800 dark:text-white dark:border-gray-600"
                     />
                 @endfor
             </div>
