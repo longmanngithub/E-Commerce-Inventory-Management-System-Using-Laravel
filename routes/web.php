@@ -29,7 +29,7 @@ Route::middleware('auth:platform_owner')->group(function() {
     Route::post('/companies/{company}/reactivate', [CompanyController::class, 'reactivate'])->name('company.reactivate');
 
     // Analytics view
-    Route::get('/analytics-report', [AnalyticsController::class, 'index'])->name('analytics.report');
+    Route::get('/analytics-report', [AnalyticsController::class, 'index'])->name('owner.analytics.report');
 });
 
 require __DIR__.'/auth.php';
