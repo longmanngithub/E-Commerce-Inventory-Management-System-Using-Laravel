@@ -40,9 +40,9 @@
                         {{-- Company Logo --}}
                         <div class="flex">
                             @if($companyData['imageUrl'])
-                                <img src="{{ $companyData['imageUrl'] }}" alt="{{ $companyData['name'] }}" class="w-72 lg:w-full h-full rounded-lg object-contain">
+                                <img src="{{ $companyData['imageUrl'] }}" alt="{{ $companyData['name'] }}" class="w-full h-full rounded-lg object-contain">
                             @else
-                                <div class="w-72 lg:w-full aspect-square bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <div class="w-full aspect-square bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
                                     <span class="text-white font-bold text-2xl">{{ substr($companyData['name'], 0, 1) }}</span>
                                 </div>
                             @endif
