@@ -51,8 +51,8 @@
 <body class="font-sans antialiased safe-area-inset">
 <!-- Global Alpine.js state for navigation -->
 <div x-data="{
-            sidebarOpen: window.innerWidth >= 1024,
-            isDesktop: window.innerWidth >= 1024,
+            sidebarOpen: window.innerWidth >= 1280,
+            isDesktop: window.innerWidth >= 1280,
             toggleSidebar() {
                 this.sidebarOpen = !this.sidebarOpen;
             },
@@ -61,7 +61,7 @@
             },
             init() {
                 const checkDesktop = () => {
-                    this.isDesktop = window.innerWidth >= 1024;
+                    this.isDesktop = window.innerWidth >= 1280;
                     if (this.isDesktop) this.sidebarOpen = true;
                     else this.sidebarOpen = false;
                 };
