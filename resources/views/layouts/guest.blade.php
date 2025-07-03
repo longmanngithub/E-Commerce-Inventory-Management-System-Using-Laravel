@@ -61,8 +61,8 @@
 <div class="hidden lg:grid lg:grid-cols-2 lg:items-center min-h-screen">
     {{-- Background Image - Only shown on desktop --}}
     <div class="w-full h-full bg-white dark:bg-gray-900 py-8 ps-8">
-        <div class="rounded-3xl bg-sky-200/50 h-full">
-            <img class="w-full h-full object-cover rounded-3xl opacity-80" src="storage/background-image/background3.jpg" alt="background image">
+        <div class="rounded-3xl bg-sky-200/50 h-full" style="background-image: url('../storage/background-image/background3.jpg'); object-fit: cover; background-repeat: no-repeat; background-size: cover; background-position: center">
+{{--            <img class="w-full h-full object-cover rounded-3xl opacity-80" src="storage/background-image/background3.jpg" alt="background image">--}}
         </div>
     </div>
 
