@@ -158,7 +158,7 @@
                     {{-- Description --}}
                     <div>
                         <label for="product_desc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Description <span class="text-red-500">*</span>
+                            Description
                         </label>
                         <textarea id="product_desc"
                                   name="product_desc"
