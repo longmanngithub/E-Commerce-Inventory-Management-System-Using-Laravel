@@ -1,14 +1,15 @@
 <?php
-
 namespace App\Observers;
 
 use App\Models\Order;
 use App\Notifications\LowStockWarning;
+use Illuminate\Support\Facades\Notification;
 
 class OrderObserver
 {
     /**
      * Handle the Order "created" event.
+     * This will run automatically after a new order is saved to the database.
      */
     public function created(Order $order): void
     {
@@ -18,50 +19,16 @@ class OrderObserver
             foreach ($order->orderItems as $item) {
                 $product = $item->product;
 
-                // After the stock is reduced, check its level
-                $currentStock = $product->stocks->sum('stock_quantity');
+                // After the stock is reduced by the order, check its new level
+                $currentStock = $product->stocks()->sum('stock_quantity');
                 $reorderPoint = $product->reorder_point;
 
-                if ($currentStock <= $reorderPoint) {
-                    // If stock is low, find the company owner and send the notification
-                    $companyOwner = $product->company->admins()->where('is_owner', true)->first();
-                    if ($companyOwner) {
-                        $companyOwner->notify(new LowStockWarning($product));
-                    }
+                if ($currentStock <= $reorderPoint && $currentStock > 0) {
+                    // If stock is low, find all company admins and notify them
+                    $usersToNotify = $product->company->admins;
+                    Notification::send($usersToNotify, new LowStockWarning($product));
                 }
             }
         }
-    }
-
-    /**
-     * Handle the Order "updated" event.
-     */
-    public function updated(Order $order): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Order "deleted" event.
-     */
-    public function deleted(Order $order): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Order "restored" event.
-     */
-    public function restored(Order $order): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Order "force deleted" event.
-     */
-    public function forceDeleted(Order $order): void
-    {
-        //
     }
 }
