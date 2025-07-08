@@ -215,19 +215,28 @@ class ProductController extends Controller
             return response()->json(['message' => 'No valid products found for deletion.'], 404);
         }
 
+        $deletedProductNames = $productsToDelete->pluck('product_name')->implode(', ');
+
         // Use a transaction for safety. If any deletion fails, all are rolled back.
         DB::transaction(function () use ($productsToDelete) {
             foreach ($productsToDelete as $product) {
                 // Delete the image from storage if it exists.
-                if ($product->product_image) {
-                    Storage::disk('public')->delete($product->product_image);
-                }
+//                if ($product->product_image) {
+//                    Storage::disk('public')->delete($product->product_image);
+//                }
                 // Delete related stock records first.
                 $product->stocks()->delete();
                 // Then, soft delete the product itself.
                 $product->delete();
             }
         });
+
+        $this->auditLogService->log(
+            $request,
+            'Deleted',
+            "User performed a bulk delete on products: {$deletedProductNames}.",
+            $productsToDelete,
+        );
 
         return response()->json(['message' => 'Selected products have been deleted successfully.']);
     }
