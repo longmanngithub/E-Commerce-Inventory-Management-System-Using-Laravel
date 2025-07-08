@@ -106,7 +106,7 @@
                                             @endif
 
                                             {{-- Updated Delete button to open modal --}}
-                                            @if($user['role'] !== 'Company Owner' && ($user['id'] !== Auth::id()))
+                                            @if($user['role'] !== 'Company Owner' && $user['role'] !== 'Admin' && ($user['id'] !== Auth::id()))
                                                 <button type="button"
                                                         class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                                                         x-data

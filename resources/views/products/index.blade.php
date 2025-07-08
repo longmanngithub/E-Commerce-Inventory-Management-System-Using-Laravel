@@ -253,7 +253,7 @@
                                     </div>
                                     <hr class="border-gray-200 dark:border-gray-700 -mx-2">
                                     <div class="pt-1">
-                                        <button type="button" id="confirm-delete"
+                                        <button type="button" id="confirm-bulk-delete"
                                                 class="w-full px-4 py-3 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold text-lg text-center transition-colors duration-200">
                                             Delete
                                         </button>
