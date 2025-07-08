@@ -120,7 +120,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click="closeSidebar()"
-        class="fixed inset-0 bg-gray-600 bg-opacity-75 lg:hidden z-40"
+        class="fixed inset-0 bg-gray-100 dark:bg-gray-600 bg-opacity-75 lg:hidden z-40"
     ></div>
 
     <!-- Main Content Area -->
