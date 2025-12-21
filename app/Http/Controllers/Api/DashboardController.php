@@ -16,9 +16,13 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Since this is for the front-app dashboard, it's scoped to the logged-in user's company
+        // Scoped to the logged-in user's company
         $user = $request->user();
         $companyId = $user->company_id;
+
+        // --- DETECT DATABASE DRIVER ---
+        // MySQL uses "%b", PostgreSQL uses 'Mon' for abbreviated month names
+        $isPgsql = DB::connection()->getDriverName() === 'pgsql';
 
         // --- OVERVIEW CARDS ---
         $products = Product::where('company_id', $companyId)->with('stocks')->get();
@@ -36,18 +40,36 @@ class DashboardController extends Controller
 
         // --- INVENTORY VALUE TREND CHART ---
         $startDate = now()->subMonths(5)->startOfMonth();
+
+        // 1. Prepare dynamic SQL for Stock In
+        // PostgreSQL: TO_CHAR(stock_purchase_date, 'Mon')
+        // MySQL:      DATE_FORMAT(stock_purchase_date, "%b")
+        $stockInDateSQL = $isPgsql 
+            ? "TO_CHAR(stock_purchase_date, 'Mon')" 
+            : "DATE_FORMAT(stock_purchase_date, '%b')";
+
         $stockIn = Stock::where('company_id', $companyId)
             ->where('stock_purchase_date', '>=', $startDate)
-            ->select(DB::raw('SUM(purchase_price * stock_quantity) as total, DATE_FORMAT(stock_purchase_date, "%b") as month, MIN(stock_purchase_date) as month_date'))
-            ->groupBy('month')->orderBy('month_date')->pluck('total', 'month');
+            ->select(DB::raw("SUM(purchase_price * stock_quantity) as total, $stockInDateSQL as month, MIN(stock_purchase_date) as month_date"))
+            ->groupBy('month')
+            ->orderBy('month_date')
+            ->pluck('total', 'month');
+
+        // 2. Prepare dynamic SQL for Stock Out
+        $stockOutDateSQL = $isPgsql 
+            ? "TO_CHAR(orders.order_date, 'Mon')" 
+            : "DATE_FORMAT(orders.order_date, '%b')";
 
         $stockOut = \App\Models\OrderItem::whereHas('product', fn($q) => $q->where('company_id', $companyId))
             ->whereHas('order', fn($q) => $q->where('order_status', 'Paid')->where('order_date', '>=', $startDate))
             ->join('stock', 'order_item.product_id', '=', 'stock.product_id')
             ->join('orders', 'order_item.order_id', '=', 'orders.order_id')
-            ->select(DB::raw('SUM(stock.purchase_price * order_item.order_item_quantity) as total, DATE_FORMAT(orders.order_date, "%b") as month, MIN(orders.order_date) as month_date'))
-            ->groupBy('month')->orderBy('month_date')->pluck('total', 'month');
+            ->select(DB::raw("SUM(stock.purchase_price * order_item.order_item_quantity) as total, $stockOutDateSQL as month, MIN(orders.order_date) as month_date"))
+            ->groupBy('month')
+            ->orderBy('month_date')
+            ->pluck('total', 'month');
 
+        // --- CHART DATA FORMATTING ---
         $chartLabels = collect([]);
         for ($i = 5; $i >= 0; $i--) { $chartLabels->push(now()->subMonths($i)->format('M')); }
         $stockInData = $chartLabels->map(fn($month) => $stockIn[$month] ?? 0);
@@ -82,7 +104,6 @@ class DashboardController extends Controller
                     $currentStock = null;
                     $stockStatus = null;
 
-                    // Only get product details if the subject exists and is a Product
                     if ($subject && $subject instanceof \App\Models\Product) {
                         $productName = $subject->product_name;
                         $productCategory = optional($subject->category)->category_name;
@@ -99,7 +120,7 @@ class DashboardController extends Controller
                         'detail' => $log->details,
                         'timestamp' => $log->timestamp,
                         'subject_name' => $productName,
-                        'subject_category' => $productCategory,
+                        'subject_category' => $productCategory ?? null,
                         'subject_sku' => $productSku,
                         'current_stock' => $currentStock,
                         'stock_status' => $stockStatus,
