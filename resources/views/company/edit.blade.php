@@ -28,7 +28,7 @@
                             {{-- Logo --}}
                             <div class="flex-shrink-0">
                                 @if($company['imageUrl'])
-                                    <img src="{{ $company['imageUrl'] }}" alt="{{ $company['name'] }}" class="h-24 w-24 rounded-lg object-contain bg-gray-100 dark:bg-gray-700 p-1">
+                                    <img id="preview-image" src="{{ $company['imageUrl'] }}" alt="{{ $company['name'] }}" class="h-24 w-24 rounded-lg object-contain bg-gray-100 dark:bg-gray-700 p-1">
                                 @else
                                     <div class="h-24 w-24 rounded-2xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                                         <span class="text-2xl font-bold text-gray-500 dark:text-gray-400">{{ substr($company['name'], 0, 1) }}</span>
@@ -60,7 +60,7 @@
                                 {{-- Company Logo Upload Button --}}
                                 <div>
                                     <div class="relative inline-block mt-3">
-                                        <input type="file" name="company_image" id="company_image" class="sr-only" accept="image/*" onchange="handleFileUpload(this)"/>
+                                        <input type="file" name="company_image" id="company_image" form="company-update-form" class="sr-only" accept="image/*" onchange="handleFileUpload(this)"/>
                                         <label for="company_image" class="inline-flex items-center px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors duration-200">
                                             <svg class="w-4 h-4 me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.636l2.955 3.129a.75.75 0 0 0 1.09-1.03l-4.25-4.5a.75.75 0 0 0-1.09 0l-4.25 4.5a.75.75 0 1 0 1.09 1.03L9.25 4.636v8.614Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
                                             Upload New Photo
@@ -95,7 +95,7 @@
                                     </p>
                                 </header>
 
-                                <form method="POST" action="{{ route('management.company.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
+                                <form method="POST" id="company-update-form" action="{{ route('management.company.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
 
@@ -214,7 +214,21 @@
         function handleFileUpload(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                console.log('File selected:', file.name);
+
+                // Create a FileReader to read the file
+                const reader = new FileReader();
+
+                // Define what happens when the file is read
+                reader.onload = function(e) {
+                    // Find the image tag and update the src
+                    const img = document.getElementById('preview-image');
+                    if(img) {
+                        img.src = e.target.result;
+                    }
+                }
+
+                // Read the file as a Data URL (base64)
+                reader.readAsDataURL(file);
             }
         }
     </script>
