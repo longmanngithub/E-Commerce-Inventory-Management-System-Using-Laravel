@@ -19,7 +19,7 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $companyId = 16; // Target a specific company
+        $companyId = 1; // Target a specific company
         $company = Company::find($companyId);
         if (!$company) {
             $this->command->error("Company with ID {$companyId} not found, skipping order creation.");
