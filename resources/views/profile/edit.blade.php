@@ -125,7 +125,7 @@
 
                         <x-danger-button
                             x-data=""
-                            x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+                            x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-user-deletion' })"
                         >{{ __('Delete Account') }}</x-danger-button>
                     </section>
                 </div>
