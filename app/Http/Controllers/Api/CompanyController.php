@@ -76,7 +76,7 @@ class CompanyController extends Controller
             'allProducts' => $allProductsCount,
             'revenue' => $revenueThisMonth,
             'revenueChange' => $revenueChangePercentage,
-            'sales' => $revenueThisMonth, // Assuming Sales are the same as Revenue
+            'sales' => $revenueThisMonth,
             'salesChange' => $revenueChangePercentage,
         ];
         $data['companyDetails'] = [
