@@ -42,8 +42,8 @@ class AdminCompanyController extends Controller
         ]);
 
         if ($request->hasFile('company_image')) {
-            if ($company->company_image) { Storage::disk('public')->delete($company->company_image); }
-            $path = $request->file('company_image')->store('company-logos', 'public');
+            if ($company->company_image) { Storage::delete($company->company_image); }
+            $path = $request->file('company_image')->store('company-logos');
             $validatedData['company_image'] = $path;
         }
 

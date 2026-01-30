@@ -25,7 +25,7 @@ class ProductEditResource extends JsonResource
             'description' => $this->product_desc,
             'reorderPoint' => (int) $this->reorder_point,
             'expiryDate' => $this->product_expiry_date,
-            'imageUrl' => $this->product_image ? Storage::disk('public')->url($this->product_image) : null,
+            'imageUrl' => $this->product_image ? Storage::url($this->product_image) : null,
             'categoryId' => $this->category_id,
             'totalStockQuantity' => $this->stocks->sum('stock_quantity'),
 

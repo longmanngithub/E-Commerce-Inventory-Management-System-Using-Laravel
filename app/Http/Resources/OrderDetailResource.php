@@ -30,7 +30,7 @@ class OrderDetailResource extends JsonResource
 
             'items' => $this->whenLoaded('orderItems', fn() => $this->orderItems->map(fn($item) => [
                 'name' => $item->product->product_name,
-                'imageUrl' => $item->product->product_image ? Storage::disk('public')->url($item->product->product_image) : null,
+                'imageUrl' => $item->product->product_image ? Storage::url($item->product->product_image) : null,
                 'sku' => $item->product->product_SKU,
                 'category' => $item->product->category->category_name,
                 'quantity' => $item->order_item_quantity,

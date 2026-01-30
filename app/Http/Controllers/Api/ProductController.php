@@ -85,10 +85,14 @@ class ProductController extends Controller
         ]);
 
         $product = DB::transaction(function () use ($validatedData, $user, $request) {
-            $imagePath = $request->hasFile('product_image') ? $request->file('product_image')->store('product-images', 'public') : null;
+            $imagePath = $request->hasFile('product_image') ? $request->file('product_image')->store('product-images') : null;
             $product = Product::create(['company_id' => $user->company_id, 'status' => 'Active', 'product_image' => $imagePath] + $validatedData);
 
-            Stock::create(['product_id' => $product->product_id, 'stock_quantity' => $validatedData['stock_quantity'], 'purchase_price' => $validatedData['purchase_price'], 'stock_purchase_date' => $validatedData['purchase_date'], 'company_id' => $user->company_id]);
+            Stock::create(['product_id' => $product->product_id,
+                           'stock_quantity' => $validatedData['stock_quantity'],
+                           'purchase_price' => $validatedData['purchase_price'],
+                           'stock_purchase_date' => $validatedData['purchase_date'],
+                           'company_id' => $user->company_id]);
 
             return $product;
         });
@@ -152,9 +156,9 @@ class ProductController extends Controller
         // Handle the image upload if a new one was provided
         if ($request->hasFile('product_image')) {
             if ($product->product_image) {
-                Storage::disk('public')->delete($product->product_image);
+                Storage::delete($product->product_image);
             }
-            $imagePath = $request->file('product_image')->store('product-images', 'public');
+            $imagePath = $request->file('product_image')->store('product-images');
             $product->update(['product_image' => $imagePath]);
         }
 

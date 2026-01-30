@@ -41,11 +41,11 @@ class DashboardController extends Controller
         // --- INVENTORY VALUE TREND CHART ---
         $startDate = now()->subMonths(5)->startOfMonth();
 
-        // 1. Prepare dynamic SQL for Stock In
+        // Prepare dynamic SQL for Stock In
         // PostgreSQL: TO_CHAR(stock_purchase_date, 'Mon')
         // MySQL:      DATE_FORMAT(stock_purchase_date, "%b")
-        $stockInDateSQL = $isPgsql 
-            ? "TO_CHAR(stock_purchase_date, 'Mon')" 
+        $stockInDateSQL = $isPgsql
+            ? "TO_CHAR(stock_purchase_date, 'Mon')"
             : "DATE_FORMAT(stock_purchase_date, '%b')";
 
         $stockIn = Stock::where('company_id', $companyId)
@@ -55,9 +55,9 @@ class DashboardController extends Controller
             ->orderBy('month_date')
             ->pluck('total', 'month');
 
-        // 2. Prepare dynamic SQL for Stock Out
-        $stockOutDateSQL = $isPgsql 
-            ? "TO_CHAR(orders.order_date, 'Mon')" 
+        // Prepare dynamic SQL for Stock Out
+        $stockOutDateSQL = $isPgsql
+            ? "TO_CHAR(orders.order_date, 'Mon')"
             : "DATE_FORMAT(orders.order_date, '%b')";
 
         $stockOut = \App\Models\OrderItem::whereHas('product', fn($q) => $q->where('company_id', $companyId))
@@ -115,7 +115,7 @@ class DashboardController extends Controller
                     return [
                         'userName' => optional($log->user)->name ?? 'System',
                         'action' => $log->action,
-                        'product_image_url' => optional($log->subject)->product_image ? \Illuminate\Support\Facades\Storage::disk('public')->url($log->subject->product_image) : null,
+                        'product_image_url' => optional($log->subject)->product_image ? \Illuminate\Support\Facades\Storage::url($log->subject->product_image) : null,
                         'entity' => $log->entity_affected,
                         'detail' => $log->details,
                         'timestamp' => $log->timestamp,

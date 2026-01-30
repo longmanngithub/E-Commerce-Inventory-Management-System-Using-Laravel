@@ -163,9 +163,9 @@ class ProfileController extends Controller
         $imageColumn = $user->getImageUrlColumn();
         $path = $user->{$imageColumn};
 
-        if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-            $file = \Illuminate\Support\Facades\Storage::disk('public')->get($path);
-            $type = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($path);
+        if ($path && \Illuminate\Support\Facades\Storage::exists($path)) {
+            $file = \Illuminate\Support\Facades\Storage::get($path);
+            $type = \Illuminate\Support\Facades\Storage::mimeType($path);
             return response($file)->header('Content-Type', $type);
         }
 
@@ -189,12 +189,12 @@ class ProfileController extends Controller
         if ($request->hasFile('profile_picture')) {
             // Delete the old photo from storage if it exists to save space.
             if ($user->{$imageColumn}) {
-                Storage::disk('public')->delete($user->{$imageColumn});
+                Storage::delete($user->{$imageColumn});
             }
 
             // Store the new photo in 'storage/app/public/profile-photos'
             //    and get the path to save in the database.
-            $path = $request->file('profile_picture')->store('profile-photos', 'public');
+            $path = $request->file('profile_picture')->store('profile-photos');
 
             // Save the new file path to the user's image column.
             $user->{$imageColumn} = $path;

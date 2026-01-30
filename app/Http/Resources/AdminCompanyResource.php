@@ -24,7 +24,7 @@ class AdminCompanyResource extends JsonResource
             'address' => $this->company_address,
             'website' => $this->company_website,
             'telephone' => $this->company_telephone,
-            'imageUrl' => $this->company_image ? Storage::disk('public')->url($this->company_image) : null,
+            'imageUrl' => $this->company_image ? Storage::url($this->company_image) : null,
 
             'totalUsers' => $this->admins->count() + $this->staff->count(),
             'subscription' => $this->whenLoaded('subscription', fn() => [

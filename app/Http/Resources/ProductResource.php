@@ -25,7 +25,7 @@ class ProductResource extends JsonResource
             'description' => $this->product_desc,
             'reorderPoint' => $this->reorder_point,
             'expiryDate' => $this->product_expiry_date,
-            'imageUrl' => $this->product_image ? Storage::disk('public')->url($this->product_image) : null,
+            'imageUrl' => $this->product_image ? Storage::url($this->product_image) : null,
             'category' => optional($this->category)->category_name,
             'stockQuantity' => $this->whenLoaded('stocks', fn() => $this->stocks->sum('stock_quantity')),
             'stocks' => StockResource::collection($this->whenLoaded('stocks')),

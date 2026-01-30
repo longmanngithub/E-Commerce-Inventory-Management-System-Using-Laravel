@@ -19,7 +19,7 @@ class CompanyResource extends JsonResource
             'id' => $this->company_id,
             'name' => $this->company_name,
             'status' => $this->status,
-            'imageUrl' => $this->company_image ? Storage::disk('public')->url($this->company_image) : null,
+            'imageUrl' => $this->company_image ? Storage::url($this->company_image) : null,
             'subscription' => [
                 'plan' => optional($this->subscription)->subscription_tier,
                 'status' => optional($this->subscription)->is_paid ? 'Paid' : 'Unpaid',

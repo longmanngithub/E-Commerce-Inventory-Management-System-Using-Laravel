@@ -31,7 +31,7 @@ class ProductDetailResource extends JsonResource
             'description' => $this->product_desc,
             'reorderPoint' => (int) $this->reorder_point,
             'expiryDate' => $this->product_expiry_date,
-            'imageUrl' => $this->product_image ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->product_image) : null,
+            'imageUrl' => $this->product_image ? \Illuminate\Support\Facades\Storage::url($this->product_image) : null,
             'category' => optional($this->category)->category_name,
             'totalStockQuantity' => $this->stocks->sum('stock_quantity'),
 

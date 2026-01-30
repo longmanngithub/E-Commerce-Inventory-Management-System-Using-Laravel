@@ -20,14 +20,13 @@ class CompanyAnalyticsController extends Controller
     public function index(Request $request)
     {
         $companyId = $request->user()->company_id;
-        
-        // --- 1. COMPATIBILITY SETUP ---
+
+        // --- COMPATIBILITY SETUP ---
         // Detect database driver to handle Date Formatting differences
         $driver = DB::connection()->getDriverName(); // 'mysql' or 'pgsql'
         $isPgsql = $driver === 'pgsql';
 
         // --- OVERVIEW CARDS ---
-        // (These use standard Eloquent/Carbon and work everywhere automatically)
         $totalRevenue = Order::where('company_id', $companyId)->where('order_status', 'Paid')->sum('total_amount');
         $totalProfit = OrderItem::whereHas('product', fn($q) => $q->where('company_id', $companyId))->get()->sum('profit');
         $netPurchaseValue = Stock::where('company_id', $companyId)->sum(DB::raw('purchase_price * stock_quantity'));
@@ -69,13 +68,13 @@ class CompanyAnalyticsController extends Controller
         $chartLabels = collect([]);
         $startDate = now();
         $phpDateFormat = 'M Y';
-        
+
         // Define SQL Format based on Driver
         if ($isPgsql) {
             // PostgreSQL uses TO_CHAR()
             $sqlDateFunction = "TO_CHAR";
-            $sqlFormatYear = "Mon YYYY"; 
-            $sqlFormatDay = "Mon DD";    
+            $sqlFormatYear = "Mon YYYY";
+            $sqlFormatDay = "Mon DD";
         } else {
             // MySQL uses DATE_FORMAT()
             $sqlDateFunction = "DATE_FORMAT";
@@ -122,7 +121,6 @@ class CompanyAnalyticsController extends Controller
 
         // --- BEST SELLING PRODUCT ---
         // COMPATIBILITY FIX: Use addSelect (Subquery) instead of Join+GroupBy
-        // This solves "column must appear in GROUP BY" errors.
         $topProducts = Product::where('company_id', $companyId)
             ->select('product.*')
             ->addSelect(['total_turnover' => OrderItem::selectRaw('SUM(order_item_quantity * order_item_unit_price)')
@@ -140,7 +138,7 @@ class CompanyAnalyticsController extends Controller
 
             return [
                 'name' => $product->product_name,
-                'image_url' => $product->product_image ? \Illuminate\Support\Facades\Storage::disk('public')->url($product->product_image) : null,
+                'image_url' => $product->product_image ? \Illuminate\Support\Facades\Storage::url($product->product_image) : null,
                 'sku' => $product->product_SKU,
                 'category' => optional($product->category)->category_name,
                 'remaining_quantity' => $product->stocks->sum('stock_quantity'),
@@ -201,7 +199,7 @@ class CompanyAnalyticsController extends Controller
             fputcsv($file, ['Metric', 'Value']);
             fputcsv($file, ['Total Revenue', $totalRevenue]);
             fputcsv($file, ['Total Profit', $totalProfit]);
-            fputcsv($file, []); 
+            fputcsv($file, []);
 
             fputcsv($file, ['Best Selling Products', 'SKU', 'Total Units Sold']);
             foreach ($bestSellingProducts as $product) {
