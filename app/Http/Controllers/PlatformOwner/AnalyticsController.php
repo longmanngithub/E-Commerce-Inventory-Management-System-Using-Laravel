@@ -10,12 +10,17 @@ class AnalyticsController extends Controller
 {
     public function index()
     {
+        //take the api token that store in user after login
         $token = session('api_token');
-        $response = Http::withToken($token)->withHeaders(['Accept' => 'application/json'])
+        //use the token to request to api to take analytics data from endpoint
+        $response = Http::withToken($token)->withHeaders
+        //if accept, it takes the data from api responce
+        (['Accept' => 'application/json'])
             ->get(config('services.api.url').'/analytics');
 
         if ($response->failed()) { return "Error: Could not fetch analytics from the API."; }
 
+        //displays a webpage, showing the data to user
         $analyticsData = $response->json('data');
         return view('platform-owner.analytics.index', compact('analyticsData'));
     }
